@@ -1,6 +1,6 @@
 .HONY: all clean
 
-XMPPLIB   = /root/libstrophe-2
+XMPPLIB ?= /root/libstrophe-2
 
 SRCPATH = ../source
 HDRPATH = ../include
@@ -19,7 +19,7 @@ INC_DIRS += -I$(HDRPATH)
 
 CC = gcc
 AR = ar
-CFLAGS = -O -Wall  -Wl,--gc-sections -Wl,-s -std=gnu99
+CFLAGS = -O -Wall  -Wl,--gc-sections -Wl,-s -std=gnu99 -fPIC
 DEFS = #-DTB_LOG
 
 VPATH = $(SRCPATH)
@@ -28,7 +28,23 @@ HEADERS=$(wildcard $(HDRPATH)/*.h)
 NOTDIRSRCS=$(notdir $(SRCS))
 OBJS = $(patsubst %.c,$(OBJPATH)/%.o,$(NOTDIRSRCS))
 
-all: wks_xep0047
+all: libraries wks_xep0047
+
+libraries: ${LIBPATH}/libwksxep0047.a libwksxep0047.so
+
+libwksxep0047.a: ${LIBPATH}/libwksxep0047.a
+
+${LIBPATH}/libwksxep0047.a: $(OBJS)
+	@mkdir -p $(LIBPATH)
+	$(AR) rcs $@ $^
+	@echo Compile $@ successful....
+
+libwksxep0047.so: ${LIBPATH}/libwksxep0047.so
+
+${LIBPATH}/libwksxep0047.so: $(OBJS)
+	@mkdir -p $(LIBPATH)
+	$(CC) -o $@ -shared $^
+	@echo Compile $@ successful....
 
 wks_xep0047: $(OBJS)
 	@mkdir -p $(LIBPATH)
@@ -40,4 +56,5 @@ $(OBJS): $(OBJPATH)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@  $< $(INC_DIRS) $(DEFS)
 
 clean:
-	rm -rf $(LIBPATH)/wks_xep0047 $(OBJPATH)
+	rm -rf $(LIBPATH) $(OBJPATH)
+

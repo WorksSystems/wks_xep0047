@@ -1,5 +1,5 @@
-#include "hash.h"
 #include "strophe.h"
+#include "hash.h"
 
 #define XMLNS_PING "urn:xmpp:ping"
 //#define XMLNS_IBB "http://jabber.org/protocol/ibb"
