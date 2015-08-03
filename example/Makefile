@@ -2,12 +2,11 @@
 
 XMPPLIB   = /root/libstrophe-2
 
-SRCPATH = ../source
 HDRPATH = ../include
+RLSPATH = ./release
 
+OBJPATH = ./obj
 BUILDPATH = ../build
-OBJPATH = $(BUILDPATH)/obj
-RLSPATH = $(BUILDPATH)/release
 LIBPATH = $(BUILDPATH)/lib
 
 XMPPLIB_INC = $(XMPPLIB)
@@ -19,7 +18,7 @@ INC_DIRS += -I$(HDRPATH)
 
 CC = gcc
 AR = ar
-CFLAGS = -O -Wall  -Wl,--gc-sections -Wl,-s -std=gnu99
+CFLAGS = -O -Wall -Wl,--gc-sections -Wl,-s -std=gnu99
 DEFS = #-DTB_LOG
 
 VPATH = $(SRCPATH)
@@ -28,16 +27,16 @@ HEADERS=$(wildcard $(HDRPATH)/*.h)
 NOTDIRSRCS=$(notdir $(SRCS))
 OBJS = $(patsubst %.c,$(OBJPATH)/%.o,$(NOTDIRSRCS))
 
+LIBS = $(LIBPATH)/libwksxep0047.a $(LIBPATH)/libstrophe.a -lcrypto -lssl -lexpat -lresolv
+
+
 all: wks_xep0047
 
-wks_xep0047: $(OBJS)
-	@mkdir -p $(LIBPATH)
-	$(AR) rcs $(LIBPATH)/libwksxep0047.a $(OBJPATH)/*.o 
-	@echo Compile WKS-XEP0047 successful....
-
-$(OBJS): $(OBJPATH)/%.o: %.c
-	@mkdir -p $(OBJPATH)
-	$(CC) $(CFLAGS) -c -o $@  $< $(INC_DIRS) $(DEFS)
+wks_xep0047:
+	@mkdir -p $(OBJPATH) $(RLSPATH)
+	$(CC) $(CFLAGS) -c main.c -o $(OBJPATH)/main.o $(INC_DIRS) $(DEFS)
+	$(CC) -o $(RLSPATH)/$@ $(OBJPATH)/main.o $(LIBS) 
+	@echo Compile WKS-OIC-RACLIENT successful....
 
 clean:
-	rm -rf $(LIBPATH)/wks_xep0047 $(OBJPATH)
+	rm -rf $(OBJPATH) $(RLSPATH)
