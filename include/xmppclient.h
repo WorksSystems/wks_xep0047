@@ -1,3 +1,10 @@
+#ifndef __XMPP_CLIENT_H__
+#define __XMPP_CLIENT_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "strophe.h"
 #include "hash.h"
 
@@ -9,10 +16,6 @@
 #define MAX_JSON_PAYLOAD_LEN 200
 #define MAX_HEAD_LEN	128
 #define MAX_LEN 50
-
-char *base64_encode(xmpp_ctx_t *ctx, const unsigned char * const buffer, const unsigned len);
-
-unsigned char *base64_decode(xmpp_ctx_t *ctx, const char * const buffer, const unsigned len);
 
 typedef int (*XMPP_XEP_Handler)(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata);
 
@@ -45,3 +48,8 @@ hash_t* Hash_Init(xmpp_ctx_t * const ctx, const int size, hash_free_func free);
 
 hash_t* Get_Hash_Handle();
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif//__XMPP_CLIENT_H__

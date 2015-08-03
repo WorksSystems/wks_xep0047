@@ -1,3 +1,10 @@
+#ifndef __XMPP_IBB_H__
+#define __XMPP_IBB_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "strophe.h"
 #include "wks_oic_raclient.h"
 #define XMLNS_IBB "http://jabber.org/protocol/ibb"
@@ -76,3 +83,11 @@ xmpp_ibb_session_t* XMPP_Get_IBB_Session_Handle(char* szSid);
 /*Add a session to the Queue */
 void XMPP_IBB_Add_Session_Queue(xmpp_ibb_session_t* ibb_ssn_new);
 
+extern char *base64_encode(xmpp_ctx_t *ctx, const unsigned char * const buffer, const unsigned len);
+extern unsigned char *base64_decode(xmpp_ctx_t *ctx, const char * const buffer, const unsigned len);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif//__XMPP_IBB_H__

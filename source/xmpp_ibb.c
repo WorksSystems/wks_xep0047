@@ -2,14 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "xmppclient.h"
+//#include "xmppclient.h"
 #include "xmpp_ibb.h"
 
 #include <strophe.h>
-#include "common.h"
+//#include "common.h"
 
 extern time_t glast_ping_time;
 xmpp_ibb_session_t *gXMPP_IBB_handle_head = NULL, *gXMPP_IBB_handle_tail = NULL;
+
+//char *base64_encode(xmpp_ctx_t *ctx, const unsigned char * const buffer, const unsigned len);
+//unsigned char *base64_decode(xmpp_ctx_t *ctx, const char * const buffer, const unsigned len);
 
 //return 0 for available
 int ibb_check_handle( xmpp_ibb_session_t *handle )
@@ -209,13 +212,15 @@ printf("in ibb_open_handle\n");
 
     } else if (xmpp_stanza_get_child_by_name(stanza, "data") != NULL) {
 
+        xmpp_ctx_t *ctx;
+        ctx = xmpp_conn_get_context(conn);
         session_p = ibb_get_handle_from_queue( xmpp_stanza_get_id(stanza), XMPP_IBB_Get_Sid(stanza) );
         if( session_p != NULL )
         {
             char *intext = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "data"));
             XMPP_IBB_Ack_Send( session_p );
             session_p->recv_seq = atoi( xmpp_stanza_get_attribute( xmpp_stanza_get_child_by_name( stanza, "data" ), "seq" ) );
-            session_p->recv_data = base64_decode( conn->ctx, intext, strlen(intext) );
+            session_p->recv_data = base64_decode(ctx, intext, strlen(intext) );
             XMPP_IBB_Recv_CB recv_fp = ibb_ops_p->ibb_recv_fp;
             (*recv_fp)(session_p);
         }
@@ -246,16 +251,20 @@ int XMPP_IBB_Send( xmpp_ibb_session_t *handle, char *message )
     {
         xmpp_stanza_t *iq, *data, *text;
         char *encode, seqchar[16]="";
+        xmpp_ctx_t *ctx;
+        const char *jid = xmpp_conn_get_jid(handle->conn);
 
-        iq = xmpp_stanza_new( handle->conn->ctx );
-        data = xmpp_stanza_new( handle->conn->ctx );
-        text = xmpp_stanza_new( handle->conn->ctx );
+        ctx = xmpp_conn_get_context(handle->conn);
+
+        iq = xmpp_stanza_new(ctx );
+        data = xmpp_stanza_new(ctx );
+        text = xmpp_stanza_new(ctx );
         
         xmpp_stanza_set_name( iq, "iq" );
         xmpp_stanza_set_type( iq, "set" );
         xmpp_stanza_set_id( iq, handle->id );
         xmpp_stanza_set_attribute( iq, "to", handle->peer );
-        xmpp_stanza_set_attribute( iq, "from", handle->conn->jid );
+        xmpp_stanza_set_attribute( iq, "from", jid );
 
         xmpp_stanza_set_name( data, "data" );
         xmpp_stanza_set_ns( data, XMLNS_IBB );
@@ -263,7 +272,7 @@ int XMPP_IBB_Send( xmpp_ibb_session_t *handle, char *message )
         snprintf( seqchar, sizeof(seqchar), "%d", ++handle->send_seq );
         xmpp_stanza_set_attribute( data, "seq", seqchar );
 
-        encode = base64_encode( handle->conn->ctx, (unsigned char*)message, strlen(message) );
+        encode = base64_encode(ctx, (unsigned char*)message, strlen(message) );
         xmpp_stanza_set_text_with_size( text, encode, strlen(encode) );
 
         xmpp_stanza_add_child( data, text );
@@ -271,7 +280,7 @@ int XMPP_IBB_Send( xmpp_ibb_session_t *handle, char *message )
         xmpp_send( handle->conn, iq );
 
         //handle->send_seq++;
-        xmpp_free( handle->conn->ctx, encode );
+        xmpp_free(ctx, encode );
         xmpp_stanza_release(text);
         xmpp_stanza_release(data);
         xmpp_stanza_release(iq);
@@ -284,19 +293,22 @@ int XMPP_IBB_Send( xmpp_ibb_session_t *handle, char *message )
 //return 0 for success -1 for failure
 int XMPP_IBB_Establish( xmpp_conn_t * const conn, char *destination, xmpp_ibb_session_t *session_handle )
 {
-    xmpp_ctx_t *ctx = conn->ctx;
     xmpp_stanza_t *iq, *open;
-
+    xmpp_ctx_t *ctx;
+    const char *jid = xmpp_conn_get_jid(conn);
     char *sizetemp = "4096";
     char idtemp[9]="", sidtemp[9]="";
+
     snprintf( idtemp, sizeof(idtemp), "%s", generate_random_id() );
     snprintf( sidtemp, sizeof(sidtemp) ,"%s", generate_random_id() );
     
+    ctx = xmpp_conn_get_context(conn);
+
     iq = xmpp_stanza_new(ctx);
     xmpp_stanza_set_name(iq, "iq");
     xmpp_stanza_set_type(iq, "set");
     xmpp_stanza_set_id(iq, idtemp);
-    xmpp_stanza_set_attribute(iq, "from", conn->jid);
+    xmpp_stanza_set_attribute(iq, "from", jid);
     xmpp_stanza_set_attribute(iq, "to", destination);
 
     open = xmpp_stanza_new(ctx);
@@ -347,14 +359,18 @@ int XMPP_IBB_Establish( xmpp_conn_t * const conn, char *destination, xmpp_ibb_se
 void XMPP_IBB_Ack_Send( xmpp_ibb_session_t *handle )
 {
     xmpp_stanza_t *iq;
+    xmpp_ctx_t *ctx;
+    const char *jid = xmpp_conn_get_jid(handle->conn);
 
-    iq = xmpp_stanza_new( handle->conn->ctx );
+    ctx = xmpp_conn_get_context(handle->conn);
+
+    iq = xmpp_stanza_new(ctx );
     xmpp_stanza_set_name( iq, "iq" );
     xmpp_stanza_set_type( iq, "result" );
 
     xmpp_stanza_set_id( iq, handle->id );
     xmpp_stanza_set_attribute( iq, "to", handle->peer );
-    xmpp_stanza_set_attribute( iq, "from", handle->conn->jid );
+    xmpp_stanza_set_attribute( iq, "from", jid );
     xmpp_send( handle->conn, iq );
     xmpp_stanza_release( iq );
 }
@@ -363,15 +379,19 @@ void XMPP_IBB_Ack_Send( xmpp_ibb_session_t *handle )
 void XMPP_IBB_Close( xmpp_ibb_session_t *handle )
 {
     xmpp_stanza_t *iq, *close;
+    xmpp_ctx_t *ctx;
+    const char *jid = xmpp_conn_get_jid(handle->conn);
 
-    iq = xmpp_stanza_new( handle->conn->ctx );
-    close = xmpp_stanza_new( handle->conn->ctx );
+    ctx = xmpp_conn_get_context(handle->conn);
+
+    iq = xmpp_stanza_new(ctx );
+    close = xmpp_stanza_new(ctx );
 
     xmpp_stanza_set_name( iq, "iq" );
     xmpp_stanza_set_type( iq, "set" );
     xmpp_stanza_set_id( iq, handle->id );
     xmpp_stanza_set_attribute( iq, "to", handle->peer );
-    xmpp_stanza_set_attribute( iq, "from", handle->conn->jid );
+    xmpp_stanza_set_attribute( iq, "from", jid );
 
     xmpp_stanza_set_name( close, "close" );
     xmpp_stanza_set_ns( close, XMLNS_IBB );
