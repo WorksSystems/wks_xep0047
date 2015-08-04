@@ -28,7 +28,7 @@ HEADERS=$(wildcard $(HDRPATH)/*.h)
 NOTDIRSRCS=$(notdir $(SRCS))
 OBJS = $(patsubst %.c,$(OBJPATH)/%.o,$(NOTDIRSRCS))
 
-all: libraries wks_xep0047
+all: libraries
 
 libraries: ${LIBPATH}/libwksxep0047.a libwksxep0047.so
 
@@ -45,11 +45,6 @@ ${LIBPATH}/libwksxep0047.so: $(OBJS)
 	@mkdir -p $(LIBPATH)
 	$(CC) -o $@ -shared $^
 	@echo Compile $@ successful....
-
-wks_xep0047: $(OBJS)
-	@mkdir -p $(LIBPATH)
-	$(AR) rcs $(LIBPATH)/libwksxep0047.a $(OBJPATH)/*.o 
-	@echo Compile WKS-XEP0047 successful....
 
 $(OBJS): $(OBJPATH)/%.o: %.c
 	@mkdir -p $(OBJPATH)

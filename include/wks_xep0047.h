@@ -29,5 +29,3 @@ typedef struct _xmpp_cbctx_t
     char szPort[8];
 
 } xmpp_cbctx_t;
-
-char *get_target();

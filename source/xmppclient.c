@@ -70,20 +70,8 @@ void conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, cons
 
         XMPP_Presence(conn);
 
-#if 1
         xmpp_handler_add(conn, ping_handler, XMLNS_PING, "iq", "get", ctx);
-        //   xmpp_handler_add(conn, iq_ibb_open_handler, XMLNS_IBB, "iq", "set", ctx);
-
         xmpp_handler_add(conn, message_handler, NULL, "message", NULL, ctx);
-
-#endif
-        if( strlen( get_target() ) > 2 )
-        {
-            static xmpp_ibb_session_t handle1, handle2;
-            //printf("========establish session to: %s========\n", get_target());
-            //printf("establish return: %d\n", XMPP_IBB_Establish(conn, "andreac\\40workssys.com@cloud01.workssys.com/resource2", &handle2));
-            printf("establish return: %d\n", XMPP_IBB_Establish(conn, "andreac\\40workssys.com@cloud01.workssys.com/resource3", &handle1));
-        }
 
     } else {
         fprintf(stderr, "DEBUG: disconnected\n");

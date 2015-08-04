@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "strophe.h"
-#include "wks_oic_raclient.h"
+#include "wks_xep0047.h"
 #define XMLNS_IBB "http://jabber.org/protocol/ibb"
 typedef enum {
     STATE_NONE,
@@ -36,6 +36,7 @@ typedef struct _xmpp_ibb_session_t
     unsigned char *recv_data;
 
     struct _xmpp_ibb_session_t* next;
+    struct _xmpp_ibb_session_t *internal_next;
 
 } xmpp_ibb_session_t;
 

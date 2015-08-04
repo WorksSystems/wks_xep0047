@@ -27,7 +27,7 @@ HEADERS=$(wildcard $(HDRPATH)/*.h)
 NOTDIRSRCS=$(notdir $(SRCS))
 OBJS = $(patsubst %.c,$(OBJPATH)/%.o,$(NOTDIRSRCS))
 
-LIBS = $(LIBPATH)/libwksxep0047.a $(LIBPATH)/libstrophe.a -lcrypto -lssl -lexpat -lresolv
+LIBS = $(LIBPATH)/libwksxep0047.a $(LIBPATH)/libstrophe.a -lcrypto -lssl -lexpat -lresolv -lpthread
 
 
 all: wks_xep0047

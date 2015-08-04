@@ -21,9 +21,13 @@ int ibb_check_handle( xmpp_ibb_session_t *handle )
     while( temp != NULL )
     {
         if( temp == handle )
+        {
             return 0;
+        }
         else
-            temp = temp->next;
+        {
+            temp = temp->internal_next;
+        }
     }
     return -1;
 }
@@ -35,24 +39,23 @@ xmpp_ibb_session_t *ibb_get_handle_from_queue( char *id, char *sid )
     {
         if( sid != NULL )
         {
-            //printf("id: %s, temp->id: %s\n", id, temp->id );
-            //printf("sid: %s, temp->sid: %s\n", sid, temp->sid );
             if( strcmp( id, temp->id ) == 0 && strcmp( sid, temp->sid ) == 0 )
             {
                 return temp;
             }
             else
             {
-                temp = temp->next;
+                temp = temp->internal_next;
             }
         }
         else
         {
-            //printf("id: %s, temp->id: %s\n", id, temp->id );
             if( strcmp( id, temp->id ) == 0 )
+            {
                 return temp;
+            }
             else
-                temp = temp->next;
+                temp = temp->internal_next;
         }
     }
     return NULL; 
@@ -60,33 +63,15 @@ xmpp_ibb_session_t *ibb_get_handle_from_queue( char *id, char *sid )
 
 void ibb_add_handle_to_queue( xmpp_ibb_session_t *handle )
 {
-    /*
-    printf("before add, ");
-    if( handle == handle->next )
-        printf("temp is temp->next\n");
-    else
-        printf("temp is not temp->next\n");
-    */
-
     if( gXMPP_IBB_handle_head == NULL )
     {
         gXMPP_IBB_handle_head = handle;
     }
     else
-        gXMPP_IBB_handle_tail->next = handle;
+        gXMPP_IBB_handle_tail->internal_next = handle;
 
     gXMPP_IBB_handle_tail = handle;
-    gXMPP_IBB_handle_tail->next = NULL;
-
-    //printf("gXMPP_IBB_handle_head: %s\n", gXMPP_IBB_handle_head->id );
-    
-    /*
-    printf("after add, ");
-    if( handle == handle->next )
-        printf("temp is tmep->next\n");
-    else
-        printf("temp is not temp->next\n");
-    */
+    gXMPP_IBB_handle_tail->internal_next = NULL;
 }
 
 void ibb_delete_handle_from_queue( xmpp_ibb_session_t *handle )
@@ -102,23 +87,24 @@ void ibb_delete_handle_from_queue( xmpp_ibb_session_t *handle )
             {
                 if( gXMPP_IBB_handle_head == temp )
                 {
-                    gXMPP_IBB_handle_head = gXMPP_IBB_handle_head->next;
+                    gXMPP_IBB_handle_head = gXMPP_IBB_handle_head->internal_next;
                 }
                 else if( gXMPP_IBB_handle_tail == temp )
                 {
                     gXMPP_IBB_handle_tail = last;
+                    last->internal_next = NULL;
                 }
                 else
                 {
-                    last->next = temp->next;
-                    temp->next = NULL;
+                    last->internal_next = temp->internal_next;
+                    temp->internal_next = NULL;
                 }
                 return;
             }
             else
             {
                 last = temp;
-                temp = temp->next;
+                temp = temp->internal_next;
             }
         }
     }
@@ -184,7 +170,6 @@ int ibb_ack_handler( xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, voi
 
 int iq_ibb_open_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-printf("in ibb_open_handle\n");
     XMPP_IBB_Ops_t* ibb_ops_p = (XMPP_IBB_Ops_t*) userdata;
     xmpp_ibb_session_t* session_p;
 
@@ -202,6 +187,7 @@ printf("in ibb_open_handle\n");
         session_p->data_ack_count = -1;
         session_p->recv_data = NULL;
         session_p->next = NULL;
+        session_p->internal_next = NULL;
 
         ibb_add_handle_to_queue( session_p );
         XMPP_IBB_Ack_Send( session_p );
@@ -223,6 +209,8 @@ printf("in ibb_open_handle\n");
             session_p->recv_data = base64_decode(ctx, intext, strlen(intext) );
             XMPP_IBB_Recv_CB recv_fp = ibb_ops_p->ibb_recv_fp;
             (*recv_fp)(session_p);
+            xmpp_free( session_p->conn->ctx, session_p->recv_data );
+            session_p->recv_data = NULL;
         }
 
     } else if (xmpp_stanza_get_child_by_name(stanza, "close") != NULL) {
@@ -230,13 +218,12 @@ printf("in ibb_open_handle\n");
         session_p = ibb_get_handle_from_queue( xmpp_stanza_get_id(stanza), XMPP_IBB_Get_Sid(stanza) );
         if( session_p != NULL )
         {
-            printf("in close session_p != nULL\n");
             XMPP_IBB_Ack_Send( session_p );
+            ibb_delete_handle_from_queue( session_p );
             session_p->state = STATE_CLOSED;
             XMPP_IBB_Close_CB close_fp = ibb_ops_p->ibb_close_fp;
             (*close_fp)( session_p );
         }
-        printf("in close session_p == NULL\n");
     }
         
     time(&glast_ping_time);
@@ -337,6 +324,7 @@ int XMPP_IBB_Establish( xmpp_conn_t * const conn, char *destination, xmpp_ibb_se
         session_handle->data_ack_count = -1;
         session_handle->recv_data = NULL;
         session_handle->next = NULL;
+        session_handle->internal_next = NULL;
 
         /*
         if( session_handle != session_handle->next )
@@ -378,32 +366,34 @@ void XMPP_IBB_Ack_Send( xmpp_ibb_session_t *handle )
 
 void XMPP_IBB_Close( xmpp_ibb_session_t *handle )
 {
-    xmpp_stanza_t *iq, *close;
-    xmpp_ctx_t *ctx;
-    const char *jid = xmpp_conn_get_jid(handle->conn);
+    if( ibb_check_handle( handle ) == 0 )
+    {
+        xmpp_stanza_t *iq, *close;
+        xmpp_ctx_t *ctx;
+        const char *jid = xmpp_conn_get_jid(handle->conn);
 
-    ctx = xmpp_conn_get_context(handle->conn);
+        ctx = xmpp_conn_get_context(handle->conn);
+        iq = xmpp_stanza_new(ctx );
+        close = xmpp_stanza_new(ctx );
 
-    iq = xmpp_stanza_new(ctx );
-    close = xmpp_stanza_new(ctx );
+        xmpp_stanza_set_name( iq, "iq" );
+        xmpp_stanza_set_type( iq, "set" );
+        xmpp_stanza_set_id( iq, handle->id );
+        xmpp_stanza_set_attribute( iq, "to", handle->peer );
+        xmpp_stanza_set_attribute( iq, "from", jid );
 
-    xmpp_stanza_set_name( iq, "iq" );
-    xmpp_stanza_set_type( iq, "set" );
-    xmpp_stanza_set_id( iq, handle->id );
-    xmpp_stanza_set_attribute( iq, "to", handle->peer );
-    xmpp_stanza_set_attribute( iq, "from", jid );
+        xmpp_stanza_set_name( close, "close" );
+        xmpp_stanza_set_ns( close, XMLNS_IBB );
+        xmpp_stanza_set_attribute( close, "sid", handle->sid );
 
-    xmpp_stanza_set_name( close, "close" );
-    xmpp_stanza_set_ns( close, XMLNS_IBB );
-    xmpp_stanza_set_attribute( close, "sid", handle->sid );
+        xmpp_stanza_add_child( iq, close );
+        xmpp_send( handle->conn, iq );
+        xmpp_stanza_release( close );
+        xmpp_stanza_release( iq );
 
-    xmpp_stanza_add_child( iq, close );
-    xmpp_send( handle->conn, iq );
-    xmpp_stanza_release( close );
-    xmpp_stanza_release( iq );
-
-    handle->state = STATE_CLOSED;
-    ibb_delete_handle_from_queue( handle );
+        handle->state = STATE_CLOSED;
+        ibb_delete_handle_from_queue( handle );
+    }
 }
 
 char* XMPP_IBB_Get_Sid(xmpp_stanza_t * const stanza)
