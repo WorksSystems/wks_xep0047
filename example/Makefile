@@ -1,6 +1,6 @@
 .HONY: all clean
 
-XMPPLIB   = /root/libstrophe-2
+XMPPLIB ?= /root/libstrophe-2
 
 HDRPATH = ../include
 RLSPATH = ./release
@@ -8,6 +8,8 @@ RLSPATH = ./release
 OBJPATH = ./obj
 BUILDPATH = ../build
 LIBPATH = $(BUILDPATH)/lib
+XMPPLIBPATH = $(XMPPLIB)/.libs
+
 
 XMPPLIB_INC = $(XMPPLIB)
 XMPPLIB_INC_SRC = $(XMPPLIB)/src
@@ -27,7 +29,7 @@ HEADERS=$(wildcard $(HDRPATH)/*.h)
 NOTDIRSRCS=$(notdir $(SRCS))
 OBJS = $(patsubst %.c,$(OBJPATH)/%.o,$(NOTDIRSRCS))
 
-LIBS = $(LIBPATH)/libwksxep0047.a $(LIBPATH)/libstrophe.a -lcrypto -lssl -lexpat -lresolv -lpthread
+LIBS = -L$(LIBPATH) -L$(XMPPLIBPATH) -lwksxep0047 -lstrophe -lcrypto -lssl -lexpat -lresolv -lpthread
 
 
 all: wks_xep0047
