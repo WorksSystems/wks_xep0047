@@ -8,7 +8,7 @@
 #include <strophe.h>
 #include "common.h"
 
-hash_t* gHash_Table;
+//hash_t* gHash_Table;
 extern time_t glast_ping_time;
 
 int ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
@@ -213,6 +213,7 @@ void XMPP_Close_Noshutdown(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
 
 }
 
+/*
 hash_t* Hash_Init(xmpp_ctx_t * const ctx, const int size, hash_free_func free)
 {
     gHash_Table = hash_new(ctx, size, free);
@@ -222,4 +223,5 @@ hash_t* Get_Hash_Handle()
 {
     return gHash_Table;
 }
+*/
 

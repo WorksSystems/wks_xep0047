@@ -1,6 +1,6 @@
 .HONY: all clean
 
-XMPPLIB ?= /root/libstrophe-2
+XMPPLIB  ?= /root/libstrophe-2
 
 SRCPATH = ../source
 HDRPATH = ../include
@@ -51,5 +51,4 @@ $(OBJS): $(OBJPATH)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@  $< $(INC_DIRS) $(DEFS)
 
 clean:
-	rm -rf $(LIBPATH) $(OBJPATH)
-
+	rm -rf $(LIBPATH)/wks_xep0047 $(OBJPATH)

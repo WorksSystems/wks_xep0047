@@ -35,7 +35,7 @@ typedef struct _xmpp_ibb_session_t
     int data_ack_count; //how many data ack has been received
     unsigned char *recv_data;
 
-    struct _xmpp_ibb_session_t* next;
+    struct _xmpp_ibb_session_t *next;
     struct _xmpp_ibb_session_t *internal_next;
 
 } xmpp_ibb_session_t;

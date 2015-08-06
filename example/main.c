@@ -233,7 +233,8 @@ int xmpp_ibb_open_cb( xmpp_ibb_session_t *session_handle )
     printf("state: %d\n", session_handle->state );
     printf("===============\n");
 
-    add_handle( session_handle );
+    if( session_handle->state == STATE_READY )
+        add_handle( session_handle );
     return 0;
 }
 
@@ -295,7 +296,7 @@ int main(int argc, char* argv[])
 
     conn = XMPP_Init( xmpp_un, xmpp_pw, xmpp_server, &ctx );
     XMPP_IBB_Init( conn, &xmpp_ibb_ops );
-    Hash_Init( ctx, HASH_TABLE_SIZE, xmpp_free );
+    //Hash_Init( ctx, HASH_TABLE_SIZE, xmpp_free );
     time( &glast_ping_time );
 
     xmpp_ibb_ops.ibb_open_fp = xmpp_ibb_open_cb;
