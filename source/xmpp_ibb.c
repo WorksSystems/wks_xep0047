@@ -209,7 +209,7 @@ int iq_ibb_open_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, 
             session_p->recv_data = base64_decode(ctx, intext, strlen(intext) );
             XMPP_IBB_Recv_CB recv_fp = ibb_ops_p->ibb_recv_fp;
             (*recv_fp)(session_p);
-            xmpp_free( session_p->conn->ctx, session_p->recv_data );
+            xmpp_free( ctx, session_p->recv_data );
             session_p->recv_data = NULL;
         }
 
