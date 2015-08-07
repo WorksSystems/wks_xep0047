@@ -2,8 +2,9 @@
 .sconsign.dblite
 .cproject
 .project
-.settings*.dblite
+.settings
 *.o
 *.os
 *.so
 *.a
+

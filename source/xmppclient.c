@@ -7,48 +7,41 @@
 
 #include "xmppclient.h"
 #include "xmpp_ibb.h"
+#include "wksxmpp_common.h"
 
-//hash_t* gHash_Table;
 time_t glast_ping_time;
 
-int ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-    printf("ping_handler\n");
-    XMPP_Ping(conn, xmpp_stanza_get_attribute(stanza, "from"));
+    printf("_ping_handler\n");
+    wksxmpp_ping(conn, xmpp_stanza_get_attribute(stanza, "from"));
     time(&glast_ping_time);
     
     return 1;
 }
-
-int presence_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+#if 0
+static int _presence_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-    xmpp_stanza_t *pres;
-    xmpp_ctx_t *ctx = (xmpp_ctx_t*) userdata;
+    char *topres;
 
     printf("presence handler\n");
     time(&glast_ping_time);
+    topres = xmpp_stanza_get_attribute(stanza, "from");
 
-    if (strcmp(xmpp_stanza_get_attribute(stanza, "from"), xmpp_conn_get_jid(conn)) == 0) {
+    if (strcmp(topres, xmpp_conn_get_jid(conn)) == 0) {
         printf("Get Presence of myself, return\n");
         return 1;
     }
 
-    pres = xmpp_stanza_new(ctx);
+    wksxmpp_presence(conn, topres);
 
-    xmpp_stanza_set_name(pres, "presence");
-
-    xmpp_stanza_set_attribute(pres, "to", xmpp_stanza_get_attribute(stanza, "from"));
-
-    xmpp_send(conn, pres);
-    xmpp_stanza_release(pres);
     return 1;
-
 }
-
-int message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+#endif
+static int _message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
     xmpp_ctx_t *ctx = (xmpp_ctx_t*) userdata;
-    printf("message_handler\n");
+    printf("_message_handler\n");
     char *intext = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "body"));
 
     printf("Get message body=\n%s\n", intext);
@@ -68,84 +61,14 @@ void conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, cons
     if (status == XMPP_CONN_CONNECT) {
         fprintf(stderr, "connected Received : [%s]\n", (char *) userdata);
 
-        XMPP_Presence(conn);
+        wksxmpp_presence(conn, NULL);
 
-        xmpp_handler_add(conn, ping_handler, XMLNS_PING, "iq", "get", ctx);
-        xmpp_handler_add(conn, message_handler, NULL, "message", NULL, ctx);
+        xmpp_handler_add(conn, _ping_handler, XMLNS_PING, "iq", "get", ctx);
+        xmpp_handler_add(conn, _message_handler, NULL, "message", NULL, ctx);
 
     } else {
         fprintf(stderr, "DEBUG: disconnected\n");
     }
-
-}
-
-void XMPP_Echo_Test(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
-{
-
-#if 0
-    char to[128], from[128];
-    char time_str[128];
-    xmpp_stanza_t *stanza_2;
-
-    stanza_2 = xmpp_stanza_copy(stanza);
-    strcpy(from, xmpp_stanza_get_attribute(stanza, "from"));
-    strcpy(to, xmpp_stanza_get_attribute(stanza, "to"));
-
-    printf("to =%s, from=%s\n", to, from);
-    time_t tt;
-    xmpp_stanza_set_attribute(stanza_2, "to", from);
-    xmpp_stanza_set_attribute(stanza_2, "from", to);
-    tt = time(NULL);
-
-    printf("time=[%s]\n", ctime(&tt));
-    xmpp_stanza_set_id(stanza_2,ctime(&tt));
-    xmpp_send(conn, stanza_2);
-    xmpp_stanza_release(stanza_2);
-#endif
-
-}
-
-void XMPP_Ping(xmpp_conn_t* conn, char* const xmpp_server)
-{
-
-    xmpp_stanza_t *iq, *ping;
-    xmpp_ctx_t *ctx;
-
-    ctx = xmpp_conn_get_context(conn);
-
-    iq = xmpp_stanza_new(ctx);
-    ping = xmpp_stanza_new(ctx);
-
-    xmpp_stanza_set_name(iq, "iq");
-    xmpp_stanza_set_type(iq, "get");
-    xmpp_stanza_set_id(iq, xmpp_conn_get_jid(conn));
-
-    xmpp_stanza_set_name(ping, "ping");
-    xmpp_stanza_set_ns(ping, XMLNS_PING);
-    xmpp_stanza_set_attribute(ping, "from", xmpp_conn_get_jid(conn));
-    xmpp_stanza_set_attribute(ping, "to", xmpp_server);
-
-    xmpp_stanza_add_child(iq, ping);
-
-    xmpp_send(conn, iq);
-    xmpp_stanza_release(ping);
-    xmpp_stanza_release(iq);
-
-}
-void XMPP_Presence(xmpp_conn_t* conn)
-{
-
-    xmpp_stanza_t* pres;
-    xmpp_ctx_t *ctx;
-
-    ctx = xmpp_ctx_new(NULL, NULL);
-
-    /* Send initial <presence/> so that we appear online to contacts */
-    pres = xmpp_stanza_new(ctx);
-    xmpp_stanza_set_name(pres, "presence");
-
-    xmpp_send(conn, pres);
-    xmpp_stanza_release(pres);
 
 }
 
@@ -179,7 +102,7 @@ void XMPP_Close(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
     if (conn != NULL)
         xmpp_disconnect(conn);
 
-    xmpp_handler_delete(conn, message_handler);
+    xmpp_handler_delete(conn, _message_handler);
     xmpp_handler_delete(conn, iq_ibb_open_handler);
 
     xmpp_conn_release(conn);
@@ -199,7 +122,7 @@ void XMPP_Close_Noshutdown(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
     if (conn != NULL)
         xmpp_disconnect(conn);
 
-    xmpp_handler_delete(conn, message_handler);
+    xmpp_handler_delete(conn, _message_handler);
     xmpp_handler_delete(conn, iq_ibb_open_handler);
 
     xmpp_conn_release(conn);
@@ -212,16 +135,4 @@ void XMPP_Close_Noshutdown(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
         xmpp_ctx_free(ctx);
 
 }
-
-/*
-hash_t* Hash_Init(xmpp_ctx_t * const ctx, const int size, hash_free_func free)
-{
-    gHash_Table = hash_new(ctx, size, free);
-    return gHash_Table;
-}
-hash_t* Get_Hash_Handle()
-{
-    return gHash_Table;
-}
-*/
 

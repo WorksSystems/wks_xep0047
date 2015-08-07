@@ -16,10 +16,8 @@ STATICLIB=lib${LIBNAME}.a
 
 CC = gcc
 AR = ar
-#CFLAGS = -O -Wall -Werror -Wl,--gc-sections -Wl,-s -std=gnu99 -fPIC
 CFLAGS = -Wall -Werror -fPIC
-LDFLAGS = -L./ -L${XMPPLIB_LIB} -l${LIBNAME} -lstrophe -lssl -lcrypto -lexpat -lm -lpthread
-DEFS = #-DTB_LOG
+LDFLAGS =-Wl,-rpath=./ -Wl,-rpath=${XMPPLIB_LIB} -L./ -L${XMPPLIB_LIB} -l${LIBNAME} -lstrophe -lssl -lcrypto -lexpat -lm -lpthread
 
 VPATH = ${SRCPATH}
 SRCS=${wildcard ${SRCPATH}/*.c} 
@@ -52,7 +50,7 @@ ${SHAREDLIB}: ${OBJS}
 	@echo Compile $@ successful....
 
 .c.o:
-	${CC} ${CFLAGS} -o $@ -c $< ${INC_DIRS} ${DEFS}
+	${CC} ${CFLAGS} -o $@ -c $< ${INC_DIRS}
 
 clean:
 	rm -rf ${OBJS} ${SHAREDLIB} ${STATICLIB} ${TESTTARGET} ${MOBJS}

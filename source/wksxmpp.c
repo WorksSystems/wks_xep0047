@@ -4,18 +4,6 @@
 #include "wksxmpp.h"
 #include "wksxmpp_common.h"
 
-static void _send_presense(xmpp_conn_t *conn, char *to)
-{
-    xmpp_ctx_t      *ctx;
-    xmpp_stanza_t   *szpres;
-
-    ctx = xmpp_conn_get_context(conn);
-    szpres = xmpp_stanza_new(ctx);
-    xmpp_stanza_set_name(szpres, "presence");
-    xmpp_send(conn, szpres);
-    xmpp_stanza_release(szpres);
-}
-
 static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, 
                   const int error, xmpp_stream_error_t * const stream_error, 
                   void * const userdata) 
@@ -25,7 +13,7 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
     xmpp = (wksxmpp_t *) userdata;
 
     if (status == XMPP_CONN_CONNECT) {
-        _send_presense(conn, "");
+        wksxmpp_presence(conn, "");
     } else {
         fprintf(stderr, "\n    unknown status(%d) \n\n", status);
     }
