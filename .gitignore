@@ -1,4 +1,8 @@
-*.dblite
+# for projects that use SCons for building: http://http://www.scons.org/
+.sconsign.dblite
+.cproject
+.project
+.settings*.dblite
 *.o
 *.os
 *.so

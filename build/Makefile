@@ -1,4 +1,4 @@
-.HONY: all clean
+.PHONY: all clean
 
 XMPPLIB  ?= /root/libstrophe-2
 
@@ -11,9 +11,7 @@ RLSPATH = $(BUILDPATH)/release
 LIBPATH = $(BUILDPATH)/lib
 
 XMPPLIB_INC = $(XMPPLIB)
-XMPPLIB_INC_SRC = $(XMPPLIB)/src
 INC_DIRS += -I$(XMPPLIB_INC)
-INC_DIRS += -I$(XMPPLIB_INC_SRC)
 INC_DIRS += -I$(HDRPATH)
 
 
@@ -30,7 +28,7 @@ OBJS = $(patsubst %.c,$(OBJPATH)/%.o,$(NOTDIRSRCS))
 
 all: libraries
 
-libraries: ${LIBPATH}/libwksxep0047.a libwksxep0047.so
+libraries: libwksxep0047.a libwksxep0047.so
 
 libwksxep0047.a: ${LIBPATH}/libwksxep0047.a
 
@@ -51,4 +49,4 @@ $(OBJS): $(OBJPATH)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@  $< $(INC_DIRS) $(DEFS)
 
 clean:
-	rm -rf $(LIBPATH)/wks_xep0047 $(OBJPATH)
+	rm -rf $(LIBPATH)/wks_xep0047 $(OBJPATH) $(LIBPATH)

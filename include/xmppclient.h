@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include "strophe.h"
-#include "hash.h"
 
 #define XMLNS_PING "urn:xmpp:ping"
 //#define XMLNS_IBB "http://jabber.org/protocol/ibb"
@@ -16,6 +15,8 @@ extern "C" {
 #define MAX_JSON_PAYLOAD_LEN 200
 #define MAX_HEAD_LEN	128
 #define MAX_LEN 50
+
+extern time_t glast_ping_time;
 
 char *base64_encode(xmpp_ctx_t *ctx, const unsigned char * const buffer, const unsigned len);
 
@@ -47,10 +48,6 @@ void XMPP_Ping(xmpp_conn_t* conn, char* const xmpp_server);
 void XMPP_Close(xmpp_conn_t *conn, xmpp_ctx_t *ctx);
 
 void XMPP_Close_Noshutdown(xmpp_conn_t *conn, xmpp_ctx_t *ctx);
-
-hash_t* Hash_Init(xmpp_ctx_t * const ctx, const int size, hash_free_func free);
-
-hash_t* Get_Hash_Handle();
 
 #ifdef __cplusplus
 }

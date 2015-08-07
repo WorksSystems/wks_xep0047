@@ -1,12 +1,24 @@
 import os
 
+LIBSTROPHE_BASE='../libstrophe'
+if ARGUMENTS.get('LIBSTROPHE_BASE') is not None :
+	LIBSTROPHE_BASE=ARGUMENTS.get('LIBSTROPHE_BASE')
+
+INC_PATH=[LIBSTROPHE_BASE, 'include']
+LIB_PATH=[LIBSTROPHE_BASE + '/.libs/', '.']
+
+sources = Glob('source/*.c')
 env = Environment()
-srcs=['source/xmpp_ibb.c', 'source/xmppclient.c']
-env.AppendUnique(CPPPATH=['/home/user/github/libstrophe', '/home/user/github/libstrophe/src', 'include', '.'])
-env.AppendUnique(LIBS=['strophe'], LIBPATH=['/home/user/github/libstrophe/.libs'], RPATH=['/home/user/github/libstrophe/.libs'])
-env.SharedLibrary('wksxmpp', srcs)
-env.StaticLibrary('wksxmpp', srcs)
+env.AppendUnique(CPPPATH = INC_PATH, CCFLAGS = ['-Wall', '-Werror'])
+sharedlib = env.SharedLibrary('wksxmppxep', sources)
+staticlib = env.StaticLibrary('wksxmppxep', sources)
+
+
 menv = Environment()
-menv.AppendUnique(CPPPATH=['/home/user/github/libstrophe', '/home/user/github/libstrophe/src', 'include', '.'])
-menv.AppendUnique(LIBS=['wksxmpp', 'strophe'], LIBPATH=['.', '/home/user/github/libstrophe/.libs'], RPATH=['.', '/home/user/github/libstrophe/.libs'])
+menv.AppendUnique(CPPPATH = INC_PATH, CCFLAGS = ['-Wall', '-Werror'])
+menv.AppendUnique(LIBS = ['wksxmppxep', 'strophe', 'ssl', 'crypto', 'expat'])
+menv.AppendUnique(LIBS = ['pthread', 'm'])
+menv.AppendUnique(LIBPATH = LIB_PATH, RPATH = LIB_PATH)
 menv.Program('example/main.c')
+menv.Program('example/main_chat.c')
+

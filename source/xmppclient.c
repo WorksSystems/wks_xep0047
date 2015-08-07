@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <strophe.h>
+
 #include "xmppclient.h"
 #include "xmpp_ibb.h"
 
-#include <strophe.h>
-#include "common.h"
-
 //hash_t* gHash_Table;
-extern time_t glast_ping_time;
+time_t glast_ping_time;
 
 int ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
@@ -28,7 +28,7 @@ int presence_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, voi
     printf("presence handler\n");
     time(&glast_ping_time);
 
-    if (strcmp(xmpp_stanza_get_attribute(stanza, "from"), conn->jid) == 0) {
+    if (strcmp(xmpp_stanza_get_attribute(stanza, "from"), xmpp_conn_get_jid(conn)) == 0) {
         printf("Get Presence of myself, return\n");
         return 1;
     }
@@ -111,18 +111,18 @@ void XMPP_Ping(xmpp_conn_t* conn, char* const xmpp_server)
     xmpp_stanza_t *iq, *ping;
     xmpp_ctx_t *ctx;
 
-    ctx = conn->ctx;
+    ctx = xmpp_conn_get_context(conn);
 
     iq = xmpp_stanza_new(ctx);
     ping = xmpp_stanza_new(ctx);
 
     xmpp_stanza_set_name(iq, "iq");
     xmpp_stanza_set_type(iq, "get");
-    xmpp_stanza_set_id(iq, conn->jid);
+    xmpp_stanza_set_id(iq, xmpp_conn_get_jid(conn));
 
     xmpp_stanza_set_name(ping, "ping");
     xmpp_stanza_set_ns(ping, XMLNS_PING);
-    xmpp_stanza_set_attribute(ping, "from", conn->jid);
+    xmpp_stanza_set_attribute(ping, "from", xmpp_conn_get_jid(conn));
     xmpp_stanza_set_attribute(ping, "to", xmpp_server);
 
     xmpp_stanza_add_child(iq, ping);

@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 #include <strophe.h>
-#include "common.h"
 
 #include "xmppclient.h"
 #include "xmpp_ibb.h"
@@ -23,7 +22,7 @@ char xmpp_pw[MAX_XMPPPW_LEN] = "";
 char xmpp_server[MAX_XMPPSV_LEN] = "cloud01.workssys.com";
 int bQuit = 1;
 
-time_t glast_ping_time;
+extern time_t glast_ping_time;
 int gQuitFlag = 0;
 
 typedef enum {
