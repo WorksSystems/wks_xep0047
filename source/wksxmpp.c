@@ -12,7 +12,7 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
     to = xmpp_stanza_get_attribute(stanza, "from");
     id = xmpp_stanza_get_attribute(stanza, "id");
     wksxmpp_ping(conn, id, to, "result");
-    wksxmpp_ping(conn, NULL, to, NULL);
+    //wksxmpp_ping(conn, NULL, to, NULL);
     return 1;
 }
 
