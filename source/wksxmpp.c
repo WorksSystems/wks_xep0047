@@ -4,6 +4,20 @@
 #include "wksxmpp.h"
 #include "wksxmpp_common.h"
 
+static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+{
+    printf("_ping_handler()\n");
+    wksxmpp_ping(conn, xmpp_stanza_get_attribute(stanza, "from"));
+    return 1;
+}
+
+static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
+        void * const userdata)
+{
+    printf("_stanaz_handler()\n");
+    return 1;
+}
+
 static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, 
                   const int error, xmpp_stream_error_t * const stream_error, 
                   void * const userdata) 
@@ -14,6 +28,11 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
 
     if (status == XMPP_CONN_CONNECT) {
         wksxmpp_presence(conn, "");
+        xmpp_handler_add(conn, _ping_handler, XMLNS_PING, "iq", "get", xmpp);
+        xmpp_handler_add(conn, _stanza_handler, NULL, NULL, NULL, xmpp);
+    } else if (status == XMPP_CONN_DISCONNECT) {
+        xmpp_handler_delete(conn, _ping_handler);
+        xmpp_handler_delete(conn, _stanza_handler);
     } else {
         fprintf(stderr, "\n    unknown status(%d) \n\n", status);
     }
@@ -31,12 +50,6 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
         }
         xmpp->callback(xmpp, &conninfo, xmpp->userdata);
     }
-}
-
-static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
-        void * const userdata)
-{
-    return 1;
 }
 
 static void *pth_func(void *arg)
@@ -68,7 +81,6 @@ void wksxmpp_connect(void *ins, char *host, int port, char *jid, char *pass)
     wksxmpp_t *xmpp = (wksxmpp_t *) ins;
     xmpp_conn_set_jid(xmpp->conn, jid);
     xmpp_conn_set_pass(xmpp->conn, pass);
-    xmpp_handler_add(xmpp->conn, _stanza_handler, NULL, NULL, NULL, xmpp);
     xmpp_connect_client(xmpp->conn, NULL, 0, _conn_handler, xmpp);
 }
 
