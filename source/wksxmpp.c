@@ -6,8 +6,13 @@
 
 static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
+    char *to;
+    char *id;
     printf("_ping_handler()\n");
-    wksxmpp_ping(conn, xmpp_stanza_get_attribute(stanza, "from"));
+    to = xmpp_stanza_get_attribute(stanza, "from");
+    id = xmpp_stanza_get_attribute(stanza, "id");
+    wksxmpp_ping(conn, id, to, "result");
+    wksxmpp_ping(conn, NULL, to, NULL);
     return 1;
 }
 

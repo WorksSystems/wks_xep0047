@@ -24,6 +24,6 @@ typedef struct _wksxmpp_t {
  */
 void wksxmpp_presence(xmpp_conn_t *conn, char *to);
 
-void wksxmpp_ping(xmpp_conn_t* conn, char* const xmpp_server);
+void wksxmpp_ping(xmpp_conn_t* conn, char* const id, char * const to, char * const type);
 
 #endif//_WKS_XMPP_COMMON_

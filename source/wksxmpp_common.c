@@ -22,31 +22,42 @@ void wksxmpp_presence(xmpp_conn_t *conn, char *to)
     xmpp_stanza_release(szpres);
 }
 
-void wksxmpp_ping(xmpp_conn_t* conn, char* const xmpp_server)
+void wksxmpp_ping(xmpp_conn_t* conn, char* const id, char * const to,
+        char * const type)
 {
-
-    xmpp_stanza_t *iq, *ping;
+    xmpp_stanza_t *iq = NULL, *ping = NULL;
     xmpp_ctx_t *ctx;
 
     ctx = xmpp_conn_get_context(conn);
 
     iq = xmpp_stanza_new(ctx);
-    ping = xmpp_stanza_new(ctx);
 
     xmpp_stanza_set_name(iq, "iq");
-    xmpp_stanza_set_type(iq, "get");
-    xmpp_stanza_set_id(iq, xmpp_conn_get_jid(conn));
+    if (type != NULL && strlen(type) > 0) {
+        xmpp_stanza_set_type(iq, type);
+    } else {
+        xmpp_stanza_set_type(iq, "get");
+    }
+    if (id != NULL && strlen(id) > 0) {
+        xmpp_stanza_set_id(iq, id);
+    } else {
+        xmpp_stanza_set_id(iq, xmpp_conn_get_jid(conn));
+    }
+    xmpp_stanza_set_attribute(iq, "from", xmpp_conn_get_jid(conn));
+    xmpp_stanza_set_attribute(iq, "to", to);
 
-    xmpp_stanza_set_name(ping, "ping");
-    xmpp_stanza_set_ns(ping, XMLNS_PING);
-    xmpp_stanza_set_attribute(ping, "from", xmpp_conn_get_jid(conn));
-    xmpp_stanza_set_attribute(ping, "to", xmpp_server);
-
-    xmpp_stanza_add_child(iq, ping);
+    if (type == NULL || strcmp(type, "result") != 0) {
+        ping = xmpp_stanza_new(ctx);
+        xmpp_stanza_set_name(ping, "ping");
+        xmpp_stanza_set_ns(ping, XMLNS_PING);
+        xmpp_stanza_add_child(iq, ping);
+    }
 
     xmpp_send(conn, iq);
-    xmpp_stanza_release(ping);
-    xmpp_stanza_release(iq);
+    if (ping != NULL)
+        xmpp_stanza_release(ping);
+    if (iq != NULL)
+        xmpp_stanza_release(iq);
 
 }
 

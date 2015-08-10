@@ -13,8 +13,13 @@ time_t glast_ping_time;
 
 static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-    printf("_ping_handler\n");
-    wksxmpp_ping(conn, xmpp_stanza_get_attribute(stanza, "from"));
+    char *to;
+    char *id;
+    printf("_ping_handler()\n");
+    to = xmpp_stanza_get_attribute(stanza, "from");
+    id = xmpp_stanza_get_attribute(stanza, "id");
+    wksxmpp_ping(conn, id, to, "result");
+    //wksxmpp_ping(conn, NULL, xmpp_stanza_get_attribute(stanza, "from"), NULL);
     time(&glast_ping_time);
     
     return 1;
