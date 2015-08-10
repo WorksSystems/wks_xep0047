@@ -1,11 +1,11 @@
-XMPPLIB  ?= ../libstrophe
+LIBSTROPHE_BASE ?= ../libstrophe
 
 SRCPATH = ./source
 HDRPATH = ./include
 EXMPATH = ./example
 
-XMPPLIB_LIB = ${XMPPLIB}/.libs
-XMPPLIB_INC = ${XMPPLIB}
+XMPPLIB_LIB = ${LIBSTROPHE_BASE}/.libs
+XMPPLIB_INC = ${LIBSTROPHE_BASE}
 INC_DIRS += -I${XMPPLIB_INC}
 INC_DIRS += -I${HDRPATH}
 
