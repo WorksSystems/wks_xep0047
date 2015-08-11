@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <pthread.h>
+#include <xmpp.h>
 
-#include "wksxmpp.h"
-#include "wksxmpp_common.h"
+#include "xmpp_common.h"
 
 static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
@@ -11,8 +11,8 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
     printf("_ping_handler()\n");
     to = xmpp_stanza_get_attribute(stanza, "from");
     id = xmpp_stanza_get_attribute(stanza, "id");
-    wksxmpp_ping(conn, id, to, "result");
-    //wksxmpp_ping(conn, NULL, to, NULL);
+    xmpp_ping(conn, id, to, "result");
+    //xmpp_ping(conn, NULL, to, NULL);
     return 1;
 }
 
@@ -27,12 +27,12 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
                   const int error, xmpp_stream_error_t * const stream_error, 
                   void * const userdata) 
 {
-    wksxmpp_t      *xmpp;
+    xmpp_t      *xmpp;
 
-    xmpp = (wksxmpp_t *) userdata;
+    xmpp = (xmpp_t *) userdata;
 
     if (status == XMPP_CONN_CONNECT) {
-        wksxmpp_presence(conn, "");
+        xmpp_presence(conn, "");
         xmpp_handler_add(conn, _ping_handler, XMLNS_PING, "iq", "get", xmpp);
         xmpp_handler_add(conn, _stanza_handler, NULL, NULL, NULL, xmpp);
     } else if (status == XMPP_CONN_DISCONNECT) {
@@ -43,7 +43,7 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
     }
 
     if (xmpp->callback != NULL) {
-        wksxmpp_conninfo_t conninfo;
+        xmppconn_info_t conninfo;
         conninfo.connevent = (int) status;
         conninfo.error = error;
         if (conninfo.error != 0 && stream_error != NULL) {
@@ -59,16 +59,16 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
 
 static void *pth_func(void *arg)
 {
-    wksxmpp_t *xmpp;
-    xmpp = (wksxmpp_t *) arg;
+    xmpp_t *xmpp;
+    xmpp = (xmpp_t *) arg;
     xmpp_run(xmpp->ctx);
     return NULL;
 }
 
-void *wksxmpp_new(wksxmpp_conn_handler cb, void *userdata)
+void *xmpp_new(xmppconn_handler cb, void *userdata)
 {
-    wksxmpp_t *xmpp;
-    xmpp = (wksxmpp_t *) malloc(sizeof(struct _wksxmpp_t));
+    xmpp_t *xmpp;
+    xmpp = (xmpp_t *) malloc(sizeof(struct _xmpp_t));
 
     xmpp_initialize();
 
@@ -81,36 +81,36 @@ void *wksxmpp_new(wksxmpp_conn_handler cb, void *userdata)
     return xmpp;
 }
 
-void wksxmpp_connect(void *ins, char *host, int port, char *jid, char *pass)
+void xmpp_connect(void *ins, char *host, int port, char *jid, char *pass)
 {
-    wksxmpp_t *xmpp = (wksxmpp_t *) ins;
+    xmpp_t *xmpp = (xmpp_t *) ins;
     xmpp_conn_set_jid(xmpp->conn, jid);
     xmpp_conn_set_pass(xmpp->conn, pass);
     xmpp_connect_client(xmpp->conn, NULL, 0, _conn_handler, xmpp);
 }
 
-void wksxmpp_run_thread(void *ins)
+void xmpp_run_thread(void *ins)
 {
-    wksxmpp_t *xmpp = (wksxmpp_t *) ins;
+    xmpp_t *xmpp = (xmpp_t *) ins;
     pthread_create(&xmpp->pth, NULL, pth_func, xmpp);
 }
 
-void wksxmpp_stop_thread(void *ins)
+void xmpp_stop_thread(void *ins)
 {
-    wksxmpp_t *xmpp = (wksxmpp_t *) ins;
+    xmpp_t *xmpp = (xmpp_t *) ins;
     xmpp_disconnect(xmpp->conn);
     xmpp_stop(xmpp->ctx);
 }
 
-void wksxmpp_thread_join(void *ins)
+void xmpp_thread_join(void *ins)
 {
-    wksxmpp_t *xmpp = (wksxmpp_t *) ins;
+    xmpp_t *xmpp = (xmpp_t *) ins;
     pthread_join(xmpp->pth, NULL);
 }
 
-int wksxmpp_release(void *ins)
+int xmpp_release(void *ins)
 {
-    wksxmpp_t *xmpp = (wksxmpp_t *) ins;
+    xmpp_t *xmpp = (xmpp_t *) ins;
     xmpp_conn_release(xmpp->conn);
     xmpp->conn = NULL;
     xmpp_ctx_free(xmpp->ctx);
@@ -120,9 +120,9 @@ int wksxmpp_release(void *ins)
     return 0;
 }
 
-xmpp_conn_t *wksxmpp_get_conn(void *ins)
+xmpp_conn_t *xmpp_get_conn(void *ins)
 {
-    wksxmpp_t *xmpp = (wksxmpp_t *) ins;
+    xmpp_t *xmpp = (xmpp_t *) ins;
     return xmpp->conn;
 }
 

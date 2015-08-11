@@ -4,7 +4,7 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
-char *wksxmpp_b64encode(const char *data, size_t dlen, char **encdata)
+char *xmpp_b64encode(const char *data, size_t dlen, char **encdata)
 {
     BIO *bio, *b64;
     FILE *stream;
@@ -39,7 +39,7 @@ static size_t decDataLength(const char* encdata) {
     return (size_t)((len * 3) / 4) - padding;
 }
 
-char *wksxmpp_b64decode(const char *encdata, char **decdata, size_t *dlen)
+char *xmpp_b64decode(const char *encdata, char **decdata, size_t *dlen)
 {
     BIO *bio, *b64;
     FILE *stream;
@@ -61,7 +61,7 @@ char *wksxmpp_b64decode(const char *encdata, char **decdata, size_t *dlen)
     return *decdata;
 }
 
-void wksxmpp_b64free(void *ptr)
+void xmpp_b64free(void *ptr)
 {
     free(ptr);
 }

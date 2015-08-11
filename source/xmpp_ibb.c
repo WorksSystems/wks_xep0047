@@ -6,7 +6,7 @@
 #include "xmpp_ibb.h"
 
 #include <strophe.h>
-#include "wksxmpp_utils.h"
+#include <xmpp_utils.h>
 
 extern time_t glast_ping_time;
 xmpp_ibb_session_t *gXMPP_IBB_handle_head = NULL, *gXMPP_IBB_handle_tail = NULL;
@@ -202,10 +202,10 @@ int iq_ibb_open_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, 
             size_t decode_len;
             XMPP_IBB_Ack_Send( session_p );
             session_p->recv_seq = atoi( xmpp_stanza_get_attribute( xmpp_stanza_get_child_by_name( stanza, "data" ), "seq" ) );
-            wksxmpp_b64decode( intext, (char **) &session_p->recv_data, &decode_len );
+            xmpp_b64decode( intext, (char **) &session_p->recv_data, &decode_len );
             XMPP_IBB_Recv_CB recv_fp = ibb_ops_p->ibb_recv_fp;
             (*recv_fp)(session_p);
-            wksxmpp_b64free(session_p->recv_data);
+            xmpp_b64free(session_p->recv_data);
             session_p->recv_data = NULL;
 
         }
@@ -256,7 +256,7 @@ int XMPP_IBB_Send( xmpp_ibb_session_t *handle, char *message )
         snprintf( seqchar, sizeof(seqchar), "%d", ++handle->send_seq );
         xmpp_stanza_set_attribute( data, "seq", seqchar );
 
-        wksxmpp_b64encode( message, strlen(message), &encode );
+        xmpp_b64encode( message, strlen(message), &encode );
         xmpp_stanza_set_text_with_size( text, encode, strlen(encode) );
 
         xmpp_stanza_add_child( data, text );
@@ -267,7 +267,7 @@ int XMPP_IBB_Send( xmpp_ibb_session_t *handle, char *message )
         xmpp_stanza_release(text);
         xmpp_stanza_release(data);
         xmpp_stanza_release(iq);
-        wksxmpp_b64free( encode );
+        xmpp_b64free( encode );
         
         
         return handle->send_seq;

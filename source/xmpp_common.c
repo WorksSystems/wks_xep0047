@@ -1,13 +1,14 @@
 /*
- * wksxmpp_common.c
+ * xmpp_common.c
  *
  *  Created on: Aug 7, 2015
  *      Author: user
  */
 #include <string.h>
-#include "wksxmpp_common.h"
 
-void wksxmpp_presence(xmpp_conn_t *conn, char *to)
+#include "xmpp_common.h"
+
+void xmpp_presence(xmpp_conn_t *conn, char *to)
 {
     xmpp_ctx_t      *ctx;
     xmpp_stanza_t   *szpres;
@@ -22,7 +23,7 @@ void wksxmpp_presence(xmpp_conn_t *conn, char *to)
     xmpp_stanza_release(szpres);
 }
 
-void wksxmpp_ping(xmpp_conn_t* conn, char* const id, char * const to,
+void xmpp_ping(xmpp_conn_t* conn, char* const id, char * const to,
         char * const type)
 {
     xmpp_stanza_t *iq = NULL, *ping = NULL;

@@ -3,25 +3,25 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <xmpp.h>
+#include <xmpp_chat.h>
+#include <xmpp_utils.h>
 
-#include "wksxmpp.h"
-#include "wksxmpp_utils.h"
-#include "wksxmpp_chat.h"
 
 char g_rejid[256];
 
-static int chat_recv_handler(xmpp_conn_t *xmpp, wksxmpp_data_t *wksdata, void *udata)
+static int chat_recv_handler(xmpp_conn_t *xmpp, xmppdata_t *xdata, void *udata)
 {
     char *decdata;
     size_t decsize;
-    fprintf(stderr, "\n  chat_recv_handler(conn<%p>, from'%s', msg'%s'\n\n", xmpp, wksdata->from, (char *) wksdata->data);
-    wksxmpp_b64decode((char *) wksdata->data, &decdata, &decsize);
+    fprintf(stderr, "\n  chat_recv_handler(conn<%p>, from'%s', msg'%s'\n\n", xmpp, xdata->from, (char *) xdata->data);
+    xmpp_b64decode((char *) xdata->data, &decdata, &decsize);
     fprintf(stderr, "\n    try decode(decdata'%s', decsize(%ld))\n", decdata, decsize);
-    strcpy(g_rejid, wksdata->from);
+    strcpy(g_rejid, xdata->from);
     return 0;
 }
 
-static int conn_handler(void *ins, wksxmpp_conninfo_t *conninfo, void *udata)
+static int conn_handler(void *ins, xmppconn_info_t *conninfo, void *udata)
 {
     fprintf(stderr, "\n    conn_handler(ins<%p>, conninfo<%p>, udata<%p>)\n",
             ins, conninfo, udata);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     bool    looping = true;
     int     c, opt;
     void   *xmpp;
-    wksxmpp_data_t wksdata;
+    xmppdata_t xdata;
 
     char *host = "localhost", *jid = "user1@localhost/res1", *pass = "1234", *tojid = "user1@localhost/res1";
     int   port = 5222;
@@ -71,46 +71,46 @@ int main(int argc, char *argv[])
         }
     }
 
-    xmpp = wksxmpp_new(conn_handler, NULL);
-    wksxmpp_connect(xmpp, host, port, jid, pass);
-    wksxmpp_chat_handler_add(wksxmpp_get_conn(xmpp), chat_recv_handler, xmpp);
-    wksxmpp_run_thread(xmpp);
+    xmpp = xmpp_new(conn_handler, NULL);
+    xmpp_connect(xmpp, host, port, jid, pass);
+    xmppchat_handler_add(xmpp_get_conn(xmpp), chat_recv_handler, xmpp);
+    xmpp_run_thread(xmpp);
 
     while (looping) {
         c = getchar();
         switch (c) {
             case 'q' :
-                wksxmpp_stop_thread(xmpp);
+                xmpp_stop_thread(xmpp);
                 looping = false;
                 break;
             case 's' :
-                wksdata.data = "hello world";
-                wksdata.tojid = tojid;
-                wksxmpp_chat_send_message(wksxmpp_get_conn(xmpp), &wksdata);
+                xdata.data = "hello world";
+                xdata.tojid = tojid;
+                xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
                 break;
             case 'e' :
             {
                 char *data = "hello world base64!!";
                 char *encdata;
-                wksxmpp_b64encode(data, strlen(data), &encdata);
-                wksdata.data = encdata;
-                wksdata.tojid = tojid;
-                wksxmpp_chat_send_message(wksxmpp_get_conn(xmpp), &wksdata);
-                wksxmpp_b64free(encdata);
+                xmpp_b64encode(data, strlen(data), &encdata);
+                xdata.data = encdata;
+                xdata.tojid = tojid;
+                xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
+                xmpp_b64free(encdata);
                 break;
             }
             case 'r' :
-                wksdata.data = "reply message ";
-                wksdata.tojid = g_rejid;
-                wksxmpp_chat_send_message(wksxmpp_get_conn(xmpp), &wksdata);
+                xdata.data = "reply message ";
+                xdata.tojid = g_rejid;
+                xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
                 break;
             default :
                 break;
         }
     }
-    wksxmpp_thread_join(xmpp);
-    wksxmpp_chat_handler_del(wksxmpp_get_conn(xmpp), chat_recv_handler);
+    xmpp_thread_join(xmpp);
+    xmppchat_handler_del(xmpp_get_conn(xmpp), chat_recv_handler);
 
-    wksxmpp_release(xmpp);
+    xmpp_release(xmpp);
     return 0;
 }

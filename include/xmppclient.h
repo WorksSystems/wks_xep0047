@@ -17,10 +17,6 @@ extern "C" {
 
 extern time_t glast_ping_time;
 
-char *base64_encode(xmpp_ctx_t *ctx, const unsigned char * const buffer, const unsigned len);
-
-unsigned char *base64_decode(xmpp_ctx_t *ctx, const char * const buffer, const unsigned len);
-
 typedef int (*XMPP_XEP_Handler)(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata);
 
 typedef struct _XMPP_XEP_Ops_t

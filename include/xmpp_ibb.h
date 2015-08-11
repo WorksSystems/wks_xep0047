@@ -6,7 +6,14 @@ extern "C" {
 #endif
 
 #include "strophe.h"
-#include "wks_xep0047.h"
+
+#define MAX_XMPPUN_LEN  128
+#define MAX_XMPPPW_LEN  128
+#define MAX_XMPPSV_LEN  128
+#define MAX_ID_LEN      128
+#define MAX_JID_LEN     255
+#define MAX_SID_LEN     128
+
 #define XMLNS_IBB "http://jabber.org/protocol/ibb"
 typedef enum {
     STATE_NONE,
@@ -83,9 +90,6 @@ xmpp_ibb_session_t* XMPP_Get_IBB_Session_Handle(char* szSid);
 
 /*Add a session to the Queue */
 void XMPP_IBB_Add_Session_Queue(xmpp_ibb_session_t* ibb_ssn_new);
-
-extern char *base64_encode(xmpp_ctx_t *ctx, const unsigned char * const buffer, const unsigned len);
-extern unsigned char *base64_decode(xmpp_ctx_t *ctx, const char * const buffer, const unsigned len);
 
 #ifdef __cplusplus
 }

@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
 void PrintUsage()
 {
 
-    printf("Usage: wks_raclient-arm <Interface> [-p PIN -q 0|1 ]\n\
+    printf("Usage: main \n\
         -q : Enable Quit by Ctrl+C or SIGINT\n\
         -h : This Help\n");
 

@@ -7,7 +7,8 @@
 
 #include "xmppclient.h"
 #include "xmpp_ibb.h"
-#include "wksxmpp_common.h"
+
+#include "xmpp_common.h"
 
 time_t glast_ping_time;
 
@@ -18,8 +19,8 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
     printf("_ping_handler()\n");
     to = xmpp_stanza_get_attribute(stanza, "from");
     id = xmpp_stanza_get_attribute(stanza, "id");
-    wksxmpp_ping(conn, id, to, "result");
-    //wksxmpp_ping(conn, NULL, xmpp_stanza_get_attribute(stanza, "from"), NULL);
+    xmpp_ping(conn, id, to, "result");
+    //xmpp_ping(conn, NULL, xmpp_stanza_get_attribute(stanza, "from"), NULL);
     time(&glast_ping_time);
     
     return 1;
@@ -38,7 +39,7 @@ static int _presence_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const sta
         return 1;
     }
 
-    wksxmpp_presence(conn, topres);
+    xmpp_presence(conn, topres);
 
     return 1;
 }
@@ -66,7 +67,7 @@ void conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, cons
     if (status == XMPP_CONN_CONNECT) {
         fprintf(stderr, "connected Received : [%s]\n", (char *) userdata);
 
-        wksxmpp_presence(conn, NULL);
+        xmpp_presence(conn, NULL);
 
         xmpp_handler_add(conn, _ping_handler, XMLNS_PING, "iq", "get", ctx);
         xmpp_handler_add(conn, _message_handler, NULL, "message", NULL, ctx);
