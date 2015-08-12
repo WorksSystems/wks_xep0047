@@ -10,7 +10,7 @@ char *xmpp_b64encode(const char *data, size_t dlen, char **encdata)
 {
     BIO *bio, *b64;
     FILE *stream;
-    int encSize = 4 * ceil((double)dlen/3);
+    int encSize = 4 * ceil((double) dlen / 3);
 
     *encdata = (char *) malloc(encSize + 1);
     stream = fmemopen((void *) *encdata, encSize + 1, "w");
@@ -28,24 +28,25 @@ char *xmpp_b64encode(const char *data, size_t dlen, char **encdata)
     return *encdata;
 }
 
-static size_t decDataLength(const char* encdata) {
-      
+static size_t decDataLength(const char* encdata)
+{
+
     int len = strlen(encdata);
     int padding = 0;
 
-    if (encdata[len-1] == '=' && encdata[len-2] == '=') //last two chars are =
+    if (encdata[len - 1] == '=' && encdata[len - 2] == '=') //last two chars are =
         padding = 2;
-    else if (encdata[len-1] == '=') //last char is =
+    else if (encdata[len - 1] == '=') //last char is =
         padding = 1;
 
-    return (size_t)((len * 3) / 4) - padding;
+    return (size_t) ((len * 3) / 4) - padding;
 }
 
 char *xmpp_b64decode(const char *encdata, char **decdata, size_t *dlen)
 {
     BIO *bio, *b64;
     FILE *stream;
-    int  len;
+    int len;
 
     *dlen = decDataLength(encdata);
     *decdata = (char *) malloc((*dlen) + 1);
@@ -68,12 +69,14 @@ void xmpp_b64free(void *ptr)
     free(ptr);
 }
 
-typedef struct _node_t {
+typedef struct _node_t
+{
     void *item;
     struct _node_t *next;
-} node_t ;
+} node_t;
 
-struct _ilist_t {
+struct _ilist_t
+{
     int size;
     node_t *head;
 //    node_t *tail;
@@ -93,7 +96,8 @@ static node_t * ilist_find_node(ilist_t *il, void *item)
 {
     node_t *nd;
     for (nd = il->head; nd != NULL; nd = nd->next) {
-        if (nd->item == item) return nd;
+        if (nd->item == item)
+            return nd;
     }
     return NULL;
 }
@@ -101,7 +105,7 @@ static node_t * ilist_find_node(ilist_t *il, void *item)
 static void ilist_remove_node(ilist_t *il, node_t *nd)
 {
     node_t *tmp;
-    if(nd == NULL)
+    if (nd == NULL)
         return;
     if (il->head == nd) {
         il->head = nd->next;
@@ -148,7 +152,7 @@ void ilist_remove(ilist_t *il, void *item)
 void * ilist_finditem_func(ilist_t *il, find_fp ff, void *key)
 {
     node_t *nd;
-    if (il == NULL || ff == NULL || key == NULL )
+    if (il == NULL || ff == NULL || key == NULL)
         return NULL;
     for (nd = il->head; nd != NULL; nd = nd->next) {
         if (ff(nd->item, key)) {

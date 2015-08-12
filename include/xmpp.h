@@ -2,14 +2,14 @@
 #define _STROPHE_HELPER_
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "strophe.h"
 #include "xmpp_types.h"
 
-typedef int (*xmppconn_handler)(void *ins, xmppconn_info_t *conninfo,
-                void *userdata);
+typedef int (*xmppconn_handler)(void *ins, xmppconn_info_t *conninfo, void *userdata);
 
 xmpp_t *xmpp_new(xmppconn_handler callback, void *userdata);
 

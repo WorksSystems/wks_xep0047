@@ -16,18 +16,15 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
     return 1;
 }
 
-static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
-        void * const userdata)
+static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
     //fprintf(stderr, "    %s-%d: %s()\n", __FILE__, __LINE__, __FUNCTION__);
     return 1;
 }
 
-static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, 
-                  const int error, xmpp_stream_error_t * const stream_error, 
-                  void * const userdata) 
+static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, const int error, xmpp_stream_error_t * const stream_error, void * const userdata)
 {
-    xmpp_t      *xmpp;
+    xmpp_t *xmpp;
 
     xmpp = (xmpp_t *) userdata;
 

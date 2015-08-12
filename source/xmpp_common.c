@@ -10,8 +10,8 @@
 
 void xmpp_presence(xmpp_conn_t *conn, char *to)
 {
-    xmpp_ctx_t      *ctx;
-    xmpp_stanza_t   *szpres;
+    xmpp_ctx_t *ctx;
+    xmpp_stanza_t *szpres;
 
     ctx = xmpp_conn_get_context(conn);
     szpres = xmpp_stanza_new(ctx);
@@ -23,8 +23,7 @@ void xmpp_presence(xmpp_conn_t *conn, char *to)
     xmpp_stanza_release(szpres);
 }
 
-void xmpp_ping(xmpp_conn_t* conn, char* const id, char * const to,
-        char * const type)
+void xmpp_ping(xmpp_conn_t* conn, char* const id, char * const to, char * const type)
 {
     if (type != NULL && strcmp(type, "result") == 0) {
         xmpp_iq_ack_result(conn, id, to);

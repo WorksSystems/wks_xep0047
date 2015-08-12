@@ -9,7 +9,6 @@
 #include "xmpp_utils.h"
 #include "xmpp_ibb.h"
 
-
 char g_tojid[256] = "";
 xmpp_ibb_session_t *g_session;
 #if 0
@@ -26,10 +25,8 @@ static int chat_recv_handler(xmpp_conn_t *xmpp, xmppdata_t *xdata, void *udata)
 #endif
 static int conn_handler(void *ins, xmppconn_info_t *conninfo, void *udata)
 {
-    fprintf(stderr, "\n    conn_handler(ins<%p>, conninfo<%p>, udata<%p>)\n",
-            ins, conninfo, udata);
-    fprintf(stderr, "      status(%d) error(%d) errorType(%d) errorText '%s'\n",
-            conninfo->connevent, conninfo->error, conninfo->errortype, conninfo->errortext);
+    fprintf(stderr, "\n    conn_handler(ins<%p>, conninfo<%p>, udata<%p>)\n", ins, conninfo, udata);
+    fprintf(stderr, "      status(%d) error(%d) errorType(%d) errorText '%s'\n", conninfo->connevent, conninfo->error, conninfo->errortype, conninfo->errortext);
     return 0;
 }
 
@@ -67,17 +64,16 @@ void print_usage()
 
 int main(int argc, char *argv[])
 {
-    bool    looping = true;
-    int     opt;
+    bool looping = true;
+    int opt;
     xmpp_t *xmpp;
     xmpp_conn_t *conn;
     char msg[1024] = "";
     char *host = "localhost", *jid = "user1@localhost/res1", *pass = "1234";
-    int   port = 5222;
+    int port = 5222;
 
-    while ((opt = getopt(argc, argv, "s:p:w:j:t:h")) != -1)
-    {
-        switch(opt)
+    while ((opt = getopt(argc, argv, "s:p:w:j:t:h")) != -1) {
+        switch (opt)
         {
             case 's':
                 host = optarg;
@@ -107,19 +103,20 @@ int main(int argc, char *argv[])
     while (looping) {
         printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
         fgets(msg, sizeof(msg), stdin);
-        switch (msg[0]) {
-            case 'q' :
+        switch (msg[0])
+        {
+            case 'q':
                 xmpp_stop_thread(xmpp);
                 looping = false;
                 break;
-            case 'e' :
+            case 'e':
                 printf("input target jid to establish session: ");
                 fgets(g_tojid, sizeof(g_tojid), stdin);
                 fprintf(stderr, "tojid '%s' size(%ld)", g_tojid, strlen(g_tojid));
                 g_tojid[strlen(g_tojid) - 1] = '\0';
                 g_session = xmpp_ibb_establish(conn, g_tojid, NULL);
                 break;
-            case 'c' :
+            case 'c':
                 if (g_session == NULL || strlen(g_tojid) == 0) {
                     printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
                     continue;
@@ -129,7 +126,7 @@ int main(int argc, char *argv[])
                 g_session = NULL;
                 g_tojid[0] = '\0';
                 break;
-            case 's' :
+            case 's':
             {
                 xmppdata_t xdata;
                 if (g_session == NULL || strlen(g_tojid) == 0) {
@@ -143,7 +140,7 @@ int main(int argc, char *argv[])
                 xmpp_ibb_send_data(g_session, &xdata);
                 break;
             }
-            default :
+            default:
                 break;
         }
     }

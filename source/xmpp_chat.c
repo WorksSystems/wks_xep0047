@@ -2,7 +2,8 @@
 #include <xmpp_chat.h>
 #include "xmpp_common.h"
 
-typedef struct _xmppchat_userdata_t {
+typedef struct _xmppchat_userdata_t
+{
     xmppchat_handler handler;
     void *userdata;
 } xmppchat_userdata_t;
@@ -35,17 +36,16 @@ int xmppchat_send_message(xmpp_conn_t *conn, xmppdata_t *xdata)
     return 0;
 }
 
-static int _chat_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
-        void * const userdata)
+static int _chat_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
     xmppdata_t xdata;
     char *intext;
 
     xmppchat_userdata_t *udata = (xmppchat_userdata_t *) userdata;
 
-    if(!xmpp_stanza_get_child_by_name(stanza, "body")) return 1;
-    if(xmpp_stanza_get_attribute(stanza, "type") !=NULL &&
-            !strcmp(xmpp_stanza_get_attribute(stanza, "type"), "error"))
+    if (!xmpp_stanza_get_child_by_name(stanza, "body"))
+        return 1;
+    if (xmpp_stanza_get_attribute(stanza, "type") != NULL && !strcmp(xmpp_stanza_get_attribute(stanza, "type"), "error"))
         return 1;
     intext = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "body"));
 
@@ -56,8 +56,7 @@ static int _chat_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
     return 1;
 }
 
-void xmppchat_handler_add(xmpp_conn_t *conn, xmppchat_handler handler,
-        void *userdata)
+void xmppchat_handler_add(xmpp_conn_t *conn, xmppchat_handler handler, void *userdata)
 {
     //xmppchat_userdata_t *udata;
     //udata = (xmppchat_userdata_t *) malloc(sizeof(xmppchat_userdata_t));

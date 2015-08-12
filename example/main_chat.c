@@ -8,7 +8,6 @@
 #include "xmpp_chat.h"
 #include "xmpp_utils.h"
 
-
 char g_rejid[256];
 
 static int chat_recv_handler(xmpp_conn_t *xmpp, xmppdata_t *xdata, void *udata)
@@ -24,10 +23,8 @@ static int chat_recv_handler(xmpp_conn_t *xmpp, xmppdata_t *xdata, void *udata)
 
 static int conn_handler(void *ins, xmppconn_info_t *conninfo, void *udata)
 {
-    fprintf(stderr, "\n    conn_handler(ins<%p>, conninfo<%p>, udata<%p>)\n",
-            ins, conninfo, udata);
-    fprintf(stderr, "      status(%d) error(%d) errorType(%d) errorText '%s'\n",
-            conninfo->connevent, conninfo->error, conninfo->errortype, conninfo->errortext);
+    fprintf(stderr, "\n    conn_handler(ins<%p>, conninfo<%p>, udata<%p>)\n", ins, conninfo, udata);
+    fprintf(stderr, "      status(%d) error(%d) errorType(%d) errorText '%s'\n", conninfo->connevent, conninfo->error, conninfo->errortype, conninfo->errortext);
     return 0;
 }
 
@@ -38,17 +35,16 @@ void print_usage()
 
 int main(int argc, char *argv[])
 {
-    bool    looping = true;
-    int     c, opt;
+    bool looping = true;
+    int c, opt;
     xmpp_t *xmpp;
     xmppdata_t xdata;
 
     char *host = "localhost", *jid = "user1@localhost/res1", *pass = "1234", *tojid = "user1@localhost/res1";
-    int   port = 5222;
+    int port = 5222;
 
-    while ((opt = getopt(argc, argv, "s:p:w:j:t:h")) != -1)
-    {
-        switch(opt)
+    while ((opt = getopt(argc, argv, "s:p:w:j:t:h")) != -1) {
+        switch (opt)
         {
             case 's':
                 host = optarg;
@@ -79,17 +75,18 @@ int main(int argc, char *argv[])
 
     while (looping) {
         c = getchar();
-        switch (c) {
-            case 'q' :
+        switch (c)
+        {
+            case 'q':
                 xmpp_stop_thread(xmpp);
                 looping = false;
                 break;
-            case 's' :
+            case 's':
                 xdata.data = "hello world";
                 xdata.tojid = tojid;
                 xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
                 break;
-            case 'e' :
+            case 'e':
             {
                 char *data = "hello world base64!!";
                 char *encdata;
@@ -100,12 +97,12 @@ int main(int argc, char *argv[])
                 xmpp_b64free(encdata);
                 break;
             }
-            case 'r' :
+            case 'r':
                 xdata.data = "reply message ";
                 xdata.tojid = g_rejid;
                 xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
                 break;
-            default :
+            default:
                 break;
         }
     }

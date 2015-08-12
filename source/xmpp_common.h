@@ -9,16 +9,18 @@
 #define XMLNS_PING "urn:xmpp:ping"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct _xmpp_t {
-    xmpp_ctx_t  *ctx;
+struct _xmpp_t
+{
+    xmpp_ctx_t *ctx;
     xmpp_conn_t *conn;
-    xmpp_log_t  *log;
-    pthread_t    pth;
+    xmpp_log_t *log;
+    pthread_t pth;
     xmppconn_handler callback;
-    void        *userdata;
+    void *userdata;
 };
 
 /**

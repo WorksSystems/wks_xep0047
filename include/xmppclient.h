@@ -2,7 +2,8 @@
 #define __XMPP_CLIENT_H__
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "strophe.h"

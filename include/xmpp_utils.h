@@ -4,7 +4,8 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 char *xmpp_b64encode(const char *data, size_t dlen, char **encdata);

@@ -5,7 +5,8 @@
 #include "xmpp_types.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define MAX_XMPPUN_LEN  128
@@ -16,7 +17,8 @@ extern "C" {
 #define MAX_SID_LEN     128
 
 #define XMLNS_IBB "http://jabber.org/protocol/ibb"
-typedef enum {
+typedef enum
+{
     STATE_NONE,
     STATE_OPENING,
     STATE_READY,
@@ -24,7 +26,7 @@ typedef enum {
     STATE_CLOSED,
     STATE_FAILED
 } SEND_STATE;
-    
+
 /* xmpp_ibb_data_t and xmpp_ibb_session_t is not used in version 1.0 now.
  It is used for multi IBB session handle
  */
@@ -64,13 +66,13 @@ typedef struct _XMPP_IBB_Ops_t
 
 } XMPP_IBB_Ops_t;
 
-int XMPP_IBB_Send( xmpp_ibb_session_t *session_handle, char *message );
+int XMPP_IBB_Send(xmpp_ibb_session_t *session_handle, char *message);
 
-int XMPP_IBB_Establish( xmpp_conn_t * const conn, char *destination, xmpp_ibb_session_t *session_handle );
+int XMPP_IBB_Establish(xmpp_conn_t * const conn, char *destination, xmpp_ibb_session_t *session_handle);
 
-void XMPP_IBB_Ack_Send( xmpp_ibb_session_t *handle );
+void XMPP_IBB_Ack_Send(xmpp_ibb_session_t *handle);
 
-void XMPP_IBB_Close( xmpp_ibb_session_t *handle );
+void XMPP_IBB_Close(xmpp_ibb_session_t *handle);
 
 void XMPP_IBB_Init(xmpp_conn_t * const conn, XMPP_IBB_Ops_t* ibb_ops);
 
@@ -85,9 +87,9 @@ xmpp_ibb_session_t* XMPP_Get_IBB_Session_Handle(char* szSid);
 /*Add a session to the Queue */
 void XMPP_IBB_Add_Session_Queue(xmpp_ibb_session_t* ibb_ssn_new);
 
-typedef int (*xmpp_ibb_open_cb) (xmpp_ibb_session_t *sess);
-typedef int (*xmpp_ibb_close_cb) (xmpp_ibb_session_t *sess);
-typedef int (*xmpp_ibb_data_cb) (xmpp_ibb_session_t *sess, xmppdata_t *xdata);
+typedef int (*xmpp_ibb_open_cb)(xmpp_ibb_session_t *sess);
+typedef int (*xmpp_ibb_close_cb)(xmpp_ibb_session_t *sess);
+typedef int (*xmpp_ibb_data_cb)(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
 void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_open_cb open_cb, xmpp_ibb_close_cb close_cb, xmpp_ibb_data_cb recv_cb);
 

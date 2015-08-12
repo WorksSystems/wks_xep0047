@@ -12,7 +12,8 @@ extern time_t glast_ping_time;
 xmpp_ibb_session_t *gXMPP_IBB_handle_head = NULL, *gXMPP_IBB_handle_tail = NULL;
 ilist_t *g_list = NULL;
 
-typedef struct _xmpp_ibb_userdata_t {
+typedef struct _xmpp_ibb_userdata_t
+{
     xmpp_ibb_open_cb open_cb;
     xmpp_ibb_close_cb close_cb;
     xmpp_ibb_data_cb recv_cb;
@@ -398,7 +399,7 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             xmppdata_t xdata;
             char *intext = xmpp_stanza_get_text(child);
             sess->recv_seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
-            xmpp_b64decode(intext, (char **) &xdata.data, (size_t *)&xdata.size);
+            xmpp_b64decode(intext, (char **) &xdata.data, (size_t *) &xdata.size);
             udata->recv_cb(sess, &xdata);
             xmpp_b64free(sess->recv_data);
             sess->recv_data = NULL;
@@ -462,7 +463,6 @@ void xmpp_ibb_unregister(xmpp_conn_t * const conn)
     ilist_destroy(g_list);
 }
 
-
 int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
 {
     xmpp_stanza_t *iq, *data, *text;
@@ -516,21 +516,24 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
 
 xmpp_conn_t * xmpp_ibb_get_conn(xmpp_ibb_session_t *sess)
 {
-    if (sess == NULL) return NULL;
+    if (sess == NULL)
+        return NULL;
 
     return sess->conn;
 }
 
 char * xmpp_ibb_get_sid(xmpp_ibb_session_t *sess)
 {
-    if (sess == NULL) return NULL;
+    if (sess == NULL)
+        return NULL;
 
     return sess->sid;
 }
 
 char * xmpp_ibb_get_peer(xmpp_ibb_session_t *sess)
 {
-    if (sess == NULL) return NULL;
+    if (sess == NULL)
+        return NULL;
 
     return sess->peer;
 }
@@ -542,7 +545,7 @@ xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const pe
     xmpp_ctx_t *ctx;
     const char *jid = xmpp_conn_get_jid(conn);
     char sizetemp[6] = "";
-    int  size;
+    int size;
 
     sess = _ibb_session_init(conn, peer, sid);
     if (sess == NULL) {
