@@ -16,13 +16,13 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
 {
     char *to;
     char *id;
-    printf("_ping_handler()\n");
+    //fprintf(stderr, "    %s-%d: %s()\n", __FILE__, __LINE__, __FUNCTION__);
     to = xmpp_stanza_get_attribute(stanza, "from");
     id = xmpp_stanza_get_attribute(stanza, "id");
     xmpp_ping(conn, id, to, "result");
     //xmpp_ping(conn, NULL, xmpp_stanza_get_attribute(stanza, "from"), NULL);
     time(&glast_ping_time);
-    
+
     return 1;
 }
 #if 0
@@ -47,7 +47,7 @@ static int _presence_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const sta
 static int _message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
     xmpp_ctx_t *ctx = (xmpp_ctx_t*) userdata;
-    printf("_message_handler\n");
+    //fprintf(stderr, "  %s-%d: %s(name %s, type %s, id %s)\n", __FILE__, __LINE__, __FUNCTION__, xmpp_stanza_get_name(stanza), xmpp_stanza_get_type(stanza), xmpp_stanza_get_id(stanza));
     char *intext = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "body"));
 
     printf("Get message body=\n%s\n", intext);
@@ -56,6 +56,12 @@ static int _message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
 
     return 1;
 
+}
+
+static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+{
+    //fprintf(stderr, "  %s-%d: %s(name %s, type %s, id %s)\n", __FILE__, __LINE__, __FUNCTION__, xmpp_stanza_get_name(stanza), xmpp_stanza_get_type(stanza), xmpp_stanza_get_id(stanza));
+    return 1;
 }
 
 /* define a handler for connection events */
@@ -71,6 +77,7 @@ void conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status, cons
 
         xmpp_handler_add(conn, _ping_handler, XMLNS_PING, "iq", "get", ctx);
         xmpp_handler_add(conn, _message_handler, NULL, "message", NULL, ctx);
+        xmpp_handler_add(conn, _stanza_handler, NULL, NULL, NULL, ctx);
 
     } else {
         fprintf(stderr, "DEBUG: disconnected\n");
@@ -109,7 +116,6 @@ void XMPP_Close(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
         xmpp_disconnect(conn);
 
     xmpp_handler_delete(conn, _message_handler);
-    xmpp_handler_delete(conn, iq_ibb_open_handler);
 
     xmpp_conn_release(conn);
 
@@ -129,7 +135,6 @@ void XMPP_Close_Noshutdown(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
         xmpp_disconnect(conn);
 
     xmpp_handler_delete(conn, _message_handler);
-    xmpp_handler_delete(conn, iq_ibb_open_handler);
 
     xmpp_conn_release(conn);
 

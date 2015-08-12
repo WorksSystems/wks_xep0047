@@ -9,6 +9,8 @@
 #ifndef INC_XMPP_TYPES_H_
 #define INC_XMPP_TYPES_H_
 
+typedef struct _xmpp_t xmpp_t;
+
 typedef struct _xmppdata_t {
     void    *data;
     int      size;

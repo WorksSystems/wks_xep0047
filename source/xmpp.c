@@ -19,7 +19,7 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
 static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
         void * const userdata)
 {
-    printf("_stanaz_handler()\n");
+    //fprintf(stderr, "    %s-%d: %s()\n", __FILE__, __LINE__, __FUNCTION__);
     return 1;
 }
 
@@ -65,7 +65,7 @@ static void *pth_func(void *arg)
     return NULL;
 }
 
-void *xmpp_new(xmppconn_handler cb, void *userdata)
+xmpp_t *xmpp_new(xmppconn_handler cb, void *userdata)
 {
     xmpp_t *xmpp;
     xmpp = (xmpp_t *) malloc(sizeof(struct _xmpp_t));
@@ -81,36 +81,31 @@ void *xmpp_new(xmppconn_handler cb, void *userdata)
     return xmpp;
 }
 
-void xmpp_connect(void *ins, char *host, int port, char *jid, char *pass)
+void xmpp_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass)
 {
-    xmpp_t *xmpp = (xmpp_t *) ins;
     xmpp_conn_set_jid(xmpp->conn, jid);
     xmpp_conn_set_pass(xmpp->conn, pass);
     xmpp_connect_client(xmpp->conn, NULL, 0, _conn_handler, xmpp);
 }
 
-void xmpp_run_thread(void *ins)
+void xmpp_run_thread(xmpp_t *xmpp)
 {
-    xmpp_t *xmpp = (xmpp_t *) ins;
     pthread_create(&xmpp->pth, NULL, pth_func, xmpp);
 }
 
-void xmpp_stop_thread(void *ins)
+void xmpp_stop_thread(xmpp_t *xmpp)
 {
-    xmpp_t *xmpp = (xmpp_t *) ins;
     xmpp_disconnect(xmpp->conn);
     xmpp_stop(xmpp->ctx);
 }
 
-void xmpp_thread_join(void *ins)
+void xmpp_thread_join(xmpp_t *xmpp)
 {
-    xmpp_t *xmpp = (xmpp_t *) ins;
     pthread_join(xmpp->pth, NULL);
 }
 
-int xmpp_release(void *ins)
+int xmpp_release(xmpp_t *xmpp)
 {
-    xmpp_t *xmpp = (xmpp_t *) ins;
     xmpp_conn_release(xmpp->conn);
     xmpp->conn = NULL;
     xmpp_ctx_free(xmpp->ctx);
@@ -120,9 +115,8 @@ int xmpp_release(void *ins)
     return 0;
 }
 
-xmpp_conn_t *xmpp_get_conn(void *ins)
+xmpp_conn_t *xmpp_get_conn(xmpp_t *xmpp)
 {
-    xmpp_t *xmpp = (xmpp_t *) ins;
     return xmpp->conn;
 }
 

@@ -3,9 +3,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <xmpp.h>
-#include <xmpp_chat.h>
-#include <xmpp_utils.h>
+
+#include "xmpp.h"
+#include "xmpp_chat.h"
+#include "xmpp_utils.h"
 
 
 char g_rejid[256];
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
 {
     bool    looping = true;
     int     c, opt;
-    void   *xmpp;
+    xmpp_t *xmpp;
     xmppdata_t xdata;
 
     char *host = "localhost", *jid = "user1@localhost/res1", *pass = "1234", *tojid = "user1@localhost/res1";

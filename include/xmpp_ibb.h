@@ -1,11 +1,12 @@
 #ifndef __XMPP_IBB_H__
 #define __XMPP_IBB_H__
 
+#include "strophe.h"
+#include "xmpp_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "strophe.h"
 
 #define MAX_XMPPUN_LEN  128
 #define MAX_XMPPPW_LEN  128
@@ -17,8 +18,9 @@ extern "C" {
 #define XMLNS_IBB "http://jabber.org/protocol/ibb"
 typedef enum {
     STATE_NONE,
-    STATE_WAITING,
+    STATE_OPENING,
     STATE_READY,
+    STATE_SENDING,
     STATE_CLOSED,
     STATE_FAILED
 } SEND_STATE;
@@ -62,16 +64,6 @@ typedef struct _XMPP_IBB_Ops_t
 
 } XMPP_IBB_Ops_t;
 
-int ack_handler( xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata );
-
-int iq_ibb_open_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata);
-
-//void XMPP_IBB_SendPayload(xmpp_conn_t * const conn, char* szFrom, char* szSid, xmpp_stanza_t * const stanza, void * const userdata, OCClientResponse *);
-
-//int XMPP_IBB_data_process(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, xmpp_cbctx_t*);
-
-//void XMPP_IBB_Data_Send(xmpp_conn_t * const conn, char* szFrom, xmpp_stanza_t * const stanza, void * const userdata);
-
 int XMPP_IBB_Send( xmpp_ibb_session_t *session_handle, char *message );
 
 int XMPP_IBB_Establish( xmpp_conn_t * const conn, char *destination, xmpp_ibb_session_t *session_handle );
@@ -82,6 +74,8 @@ void XMPP_IBB_Close( xmpp_ibb_session_t *handle );
 
 void XMPP_IBB_Init(xmpp_conn_t * const conn, XMPP_IBB_Ops_t* ibb_ops);
 
+void XMPP_IBB_Release(xmpp_conn_t * const conn);
+
 char* XMPP_IBB_Get_Sid(xmpp_stanza_t * const stanza);
 /* Get IBB handle in order to get Session ID */
 xmpp_ibb_session_t* XMPP_Get_IBB_Handle(void);
@@ -90,6 +84,28 @@ xmpp_ibb_session_t* XMPP_Get_IBB_Session_Handle(char* szSid);
 
 /*Add a session to the Queue */
 void XMPP_IBB_Add_Session_Queue(xmpp_ibb_session_t* ibb_ssn_new);
+
+typedef int (*xmpp_ibb_open_cb) (xmpp_ibb_session_t *sess);
+typedef int (*xmpp_ibb_close_cb) (xmpp_ibb_session_t *sess);
+typedef int (*xmpp_ibb_data_cb) (xmpp_ibb_session_t *sess, xmppdata_t *xdata);
+
+void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_open_cb open_cb, xmpp_ibb_close_cb close_cb, xmpp_ibb_data_cb recv_cb);
+
+void xmpp_ibb_unregister(xmpp_conn_t * const conn);
+
+xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const peer, char * const sid);
+
+void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess);
+
+void xmpp_ibb_release(xmpp_ibb_session_t *sess);
+
+int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
+
+xmpp_conn_t * xmpp_ibb_get_conn(xmpp_ibb_session_t *sess);
+
+char * xmpp_ibb_get_sid(xmpp_ibb_session_t *sess);
+
+char * xmpp_ibb_get_peer(xmpp_ibb_session_t *sess);
 
 #ifdef __cplusplus
 }

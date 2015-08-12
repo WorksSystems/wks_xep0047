@@ -223,7 +223,7 @@ void handleSigInt(int signum)
     }
 }
 
-int xmpp_ibb_open_cb( xmpp_ibb_session_t *session_handle )
+static int _ibb_open_cb( xmpp_ibb_session_t *session_handle )
 {
     printf("====Open CB====\n");
     printf("id: %s\n", session_handle->id );
@@ -237,7 +237,7 @@ int xmpp_ibb_open_cb( xmpp_ibb_session_t *session_handle )
     return 0;
 }
 
-void xmpp_ibb_send_cb( xmpp_ibb_session_t *session_handle )
+static void _ibb_send_cb( xmpp_ibb_session_t *session_handle )
 {
     printf("====Send CB====\n");
     printf("id: %s\n", session_handle->id );
@@ -250,7 +250,7 @@ void xmpp_ibb_send_cb( xmpp_ibb_session_t *session_handle )
     printf("===============\n");
 }
 
-void xmpp_ibb_recv_cb( xmpp_ibb_session_t *session_handle )
+static void _ibb_recv_cb( xmpp_ibb_session_t *session_handle )
 {
     printf("====Recv CB====\n");
     printf("id: %s\n", session_handle->id );
@@ -261,7 +261,8 @@ void xmpp_ibb_recv_cb( xmpp_ibb_session_t *session_handle )
     printf("msg: %s\n", session_handle->recv_data );
     printf("===============\n");
 }
-void xmpp_ibb_close_cb( xmpp_ibb_session_t *session_handle )
+
+static void _ibb_close_cb( xmpp_ibb_session_t *session_handle )
 {
     printf("====Close CB====\n");
     printf("id: %s\n", session_handle->id );
@@ -298,10 +299,10 @@ int main(int argc, char* argv[])
     //Hash_Init( ctx, HASH_TABLE_SIZE, xmpp_free );
     time( &glast_ping_time );
 
-    xmpp_ibb_ops.ibb_open_fp = xmpp_ibb_open_cb;
-    xmpp_ibb_ops.ibb_recv_fp = xmpp_ibb_recv_cb;
-    xmpp_ibb_ops.ibb_send_fp = xmpp_ibb_send_cb;
-    xmpp_ibb_ops.ibb_close_fp = xmpp_ibb_close_cb;
+    xmpp_ibb_ops.ibb_open_fp = _ibb_open_cb;
+    xmpp_ibb_ops.ibb_recv_fp = _ibb_recv_cb;
+    xmpp_ibb_ops.ibb_send_fp = _ibb_send_cb;
+    xmpp_ibb_ops.ibb_close_fp = _ibb_close_cb;
 
     pthread_create( &pid, NULL, (void*)itf, NULL );
 
@@ -337,6 +338,7 @@ int main(int argc, char* argv[])
 
     xmpp_stop(ctx);
     sleep(1);
+    XMPP_IBB_Release(conn);
     XMPP_Close(conn, ctx);
 
     return 0;

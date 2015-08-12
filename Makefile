@@ -27,7 +27,7 @@ OBJS = ${patsubst %.c,%.o,${SRCS}}
 MSRCS=${wildcard ${EXMPATH}/*.c} 
 MOBJS = ${patsubst %.c,%.o,${MSRCS}}
 
-TESTTARGET=main main_chat
+TESTTARGET=main main_chat main_ibb
 
 all: libraries testprogram
 
@@ -37,6 +37,9 @@ main: example/main.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 main_chat: example/main_chat.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+main_ibb: example/main_ibb.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 libraries: ${SHAREDLIB} ${STATICLIB}

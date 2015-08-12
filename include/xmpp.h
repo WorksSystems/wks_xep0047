@@ -11,19 +11,19 @@ extern "C" {
 typedef int (*xmppconn_handler)(void *ins, xmppconn_info_t *conninfo,
                 void *userdata);
 
-void *xmpp_new(xmppconn_handler callback, void *userdata);
+xmpp_t *xmpp_new(xmppconn_handler callback, void *userdata);
 
-void xmpp_connect(void *ins, char *host, int port, char *jid, char *pass);
+void xmpp_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass);
 
-void xmpp_run_thread(void *ins);
+void xmpp_run_thread(xmpp_t *xmpp);
 
-void xmpp_stop_thread(void *ins);
+void xmpp_stop_thread(xmpp_t *xmpp);
 
-void xmpp_thread_join(void *ins);
+void xmpp_thread_join(xmpp_t *xmpp);
 
-int xmpp_release(void *ins);
+int xmpp_release(xmpp_t *xmpp);
 
-xmpp_conn_t *xmpp_get_conn(void *ins);
+xmpp_conn_t *xmpp_get_conn(xmpp_t *xmpp);
 
 #ifdef __cplusplus
 }
