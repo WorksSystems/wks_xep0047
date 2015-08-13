@@ -3,8 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <xmpp_helper.h>
 
-#include "xmpp.h"
 #include "xmpp_chat.h"
 #include "xmpp_utils.h"
 
@@ -68,23 +68,23 @@ int main(int argc, char *argv[])
         }
     }
 
-    xmpp = xmpp_new(conn_handler, NULL);
-    xmpp_connect(xmpp, host, port, jid, pass);
-    xmppchat_handler_add(xmpp_get_conn(xmpp), chat_recv_handler, xmpp);
-    xmpp_run_thread(xmpp);
+    xmpp = xmpphelper_new(conn_handler, NULL);
+    xmpphelper_connect(xmpp, host, port, jid, pass);
+    xmppchat_handler_add(xmpphelper_get_conn(xmpp), chat_recv_handler, xmpp);
+    xmpphelper_run(xmpp);
 
     while (looping) {
         c = getchar();
         switch (c)
         {
             case 'q':
-                xmpp_stop_thread(xmpp);
+                xmpphelper_stop(xmpp);
                 looping = false;
                 break;
             case 's':
                 xdata.data = "hello world";
                 xdata.tojid = tojid;
-                xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
+                xmppchat_send_message(xmpphelper_get_conn(xmpp), &xdata);
                 break;
             case 'e':
             {
@@ -93,22 +93,22 @@ int main(int argc, char *argv[])
                 xmpp_b64encode(data, strlen(data), &encdata);
                 xdata.data = encdata;
                 xdata.tojid = tojid;
-                xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
+                xmppchat_send_message(xmpphelper_get_conn(xmpp), &xdata);
                 xmpp_b64free(encdata);
                 break;
             }
             case 'r':
                 xdata.data = "reply message ";
                 xdata.tojid = g_rejid;
-                xmppchat_send_message(xmpp_get_conn(xmpp), &xdata);
+                xmppchat_send_message(xmpphelper_get_conn(xmpp), &xdata);
                 break;
             default:
                 break;
         }
     }
-    xmpp_thread_join(xmpp);
-    xmppchat_handler_del(xmpp_get_conn(xmpp), chat_recv_handler);
+    xmpphelper_join(xmpp);
+    xmppchat_handler_del(xmpphelper_get_conn(xmpp), chat_recv_handler);
 
-    xmpp_release(xmpp);
+    xmpphelper_release(xmpp);
     return 0;
 }

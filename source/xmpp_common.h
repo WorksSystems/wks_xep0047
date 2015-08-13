@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-#include "xmpp.h"
+#include "../include/xmpp_helper.h"
 #include "strophe.h"
 
 #define XMLNS_PING "urn:xmpp:ping"

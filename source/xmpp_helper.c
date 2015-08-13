@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <pthread.h>
-#include <xmpp.h>
-
+#include <xmpp_helper.h>
 #include "xmpp_common.h"
 
 static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
@@ -62,7 +61,7 @@ static void *pth_func(void *arg)
     return NULL;
 }
 
-xmpp_t *xmpp_new(xmppconn_handler cb, void *userdata)
+xmpp_t *xmpphelper_new(xmppconn_handler cb, void *userdata)
 {
     xmpp_t *xmpp;
     xmpp = (xmpp_t *) malloc(sizeof(struct _xmpp_t));
@@ -78,30 +77,30 @@ xmpp_t *xmpp_new(xmppconn_handler cb, void *userdata)
     return xmpp;
 }
 
-void xmpp_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass)
+void xmpphelper_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass)
 {
     xmpp_conn_set_jid(xmpp->conn, jid);
     xmpp_conn_set_pass(xmpp->conn, pass);
     xmpp_connect_client(xmpp->conn, NULL, 0, _conn_handler, xmpp);
 }
 
-void xmpp_run_thread(xmpp_t *xmpp)
+void xmpphelper_run(xmpp_t *xmpp)
 {
     pthread_create(&xmpp->pth, NULL, pth_func, xmpp);
 }
 
-void xmpp_stop_thread(xmpp_t *xmpp)
+void xmpphelper_stop(xmpp_t *xmpp)
 {
     xmpp_disconnect(xmpp->conn);
     xmpp_stop(xmpp->ctx);
 }
 
-void xmpp_thread_join(xmpp_t *xmpp)
+void xmpphelper_join(xmpp_t *xmpp)
 {
     pthread_join(xmpp->pth, NULL);
 }
 
-int xmpp_release(xmpp_t *xmpp)
+int xmpphelper_release(xmpp_t *xmpp)
 {
     xmpp_conn_release(xmpp->conn);
     xmpp->conn = NULL;
@@ -112,7 +111,7 @@ int xmpp_release(xmpp_t *xmpp)
     return 0;
 }
 
-xmpp_conn_t *xmpp_get_conn(xmpp_t *xmpp)
+xmpp_conn_t *xmpphelper_get_conn(xmpp_t *xmpp)
 {
     return xmpp->conn;
 }

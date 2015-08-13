@@ -3,8 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <xmpp_helper.h>
 
-#include "xmpp.h"
 #include "xmpp_chat.h"
 #include "xmpp_utils.h"
 #include "xmpp_ibb.h"
@@ -94,11 +94,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    xmpp = xmpp_new(conn_handler, NULL);
-    xmpp_connect(xmpp, host, port, jid, pass);
-    conn = xmpp_get_conn(xmpp);
+    xmpp = xmpphelper_new(conn_handler, NULL);
+    xmpphelper_connect(xmpp, host, port, jid, pass);
+    conn = xmpphelper_get_conn(xmpp);
     xmpp_ibb_register(conn, open_cb, close_cb, recv_cb);
-    xmpp_run_thread(xmpp);
+    xmpphelper_run(xmpp);
 
     while (looping) {
         printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
         switch (msg[0])
         {
             case 'q':
-                xmpp_stop_thread(xmpp);
+                xmpphelper_stop(xmpp);
                 looping = false;
                 break;
             case 'e':
@@ -144,11 +144,11 @@ int main(int argc, char *argv[])
                 break;
         }
     }
-    xmpp_thread_join(xmpp);
+    xmpphelper_join(xmpp);
 
-    xmpp_ibb_unregister(xmpp_get_conn(xmpp));
+    xmpp_ibb_unregister(xmpphelper_get_conn(xmpp));
 
-    xmpp_release(xmpp);
+    xmpphelper_release(xmpp);
     return 0;
 }
 
