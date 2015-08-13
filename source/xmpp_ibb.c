@@ -181,7 +181,7 @@ int XMPP_IBB_Send(xmpp_ibb_session_t *handle, char *message)
         xmpp_stanza_t *iq, *data, *text;
         char *encode, seqchar[16] = "";
         xmpp_ctx_t *ctx;
-        const char *jid = xmpp_conn_get_jid(handle->conn);
+        const char *jid = xmpp_conn_get_bound_jid(handle->conn);
 
         ctx = xmpp_conn_get_context(handle->conn);
 
@@ -224,7 +224,7 @@ int XMPP_IBB_Establish(xmpp_conn_t * const conn, char *destination, xmpp_ibb_ses
 {
     xmpp_stanza_t *iq, *open;
     xmpp_ctx_t *ctx;
-    const char *jid = xmpp_conn_get_jid(conn);
+    const char *jid = xmpp_conn_get_bound_jid(conn);
     char *sizetemp = "4096";
     char idtemp[9] = "", sidtemp[9] = "";
 
@@ -283,7 +283,7 @@ void XMPP_IBB_Close(xmpp_ibb_session_t *handle)
     if (ibb_check_handle(handle) == 0) {
         xmpp_stanza_t *iq, *close;
         xmpp_ctx_t *ctx;
-        const char *jid = xmpp_conn_get_jid(handle->conn);
+        const char *jid = xmpp_conn_get_bound_jid(handle->conn);
 
         ctx = xmpp_conn_get_context(handle->conn);
         iq = xmpp_stanza_new(ctx);
@@ -468,7 +468,7 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
     xmpp_stanza_t *iq, *data, *text;
     char *encode, seqchar[16] = "";
     xmpp_ctx_t *ctx;
-    const char *jid = xmpp_conn_get_jid(sess->conn);
+    const char *jid = xmpp_conn_get_bound_jid(sess->conn);
 
     if (sess->state != STATE_READY) {
         fprintf(stderr, "xmpp_ibb_send_data() failed. state(%d) not ready.", sess->state);
@@ -543,7 +543,7 @@ xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const pe
     xmpp_ibb_session_t *sess;
     xmpp_stanza_t *iq, *open;
     xmpp_ctx_t *ctx;
-    const char *jid = xmpp_conn_get_jid(conn);
+    const char *jid = xmpp_conn_get_bound_jid(conn);
     char sizetemp[6] = "";
     int size;
 
@@ -585,7 +585,7 @@ void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 {
     xmpp_stanza_t *iq, *close;
     xmpp_ctx_t *ctx;
-    const char *jid = xmpp_conn_get_jid(sess->conn);
+    const char *jid = xmpp_conn_get_bound_jid(sess->conn);
 
     ctx = xmpp_conn_get_context(sess->conn);
     iq = xmpp_stanza_new(ctx);

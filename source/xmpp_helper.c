@@ -17,7 +17,7 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
 
 static int _stanza_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-    //fprintf(stderr, "    %s-%d: %s()\n", __FILE__, __LINE__, __FUNCTION__);
+    //fprintf(stderr, "    %s-%d: %s() name %s id %s\n", __FILE__, __LINE__, __FUNCTION__, xmpp_stanza_get_name(stanza), xmpp_stanza_get_id(stanza));
     return 1;
 }
 
@@ -116,3 +116,7 @@ xmpp_conn_t *xmpphelper_get_conn(xmpp_t *xmpp)
     return xmpp->conn;
 }
 
+const char * xmpphelper_get_bound_jid(xmpp_t *xmpp)
+{
+    return xmpp_conn_get_bound_jid(xmpp->conn);
+}

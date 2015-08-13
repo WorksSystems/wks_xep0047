@@ -9,7 +9,7 @@ extern "C"
 #include "strophe.h"
 #include "xmpp_types.h"
 
-typedef int (*xmppconn_handler)(void *ins, xmppconn_info_t *conninfo, void *userdata);
+typedef int (*xmppconn_handler)(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *userdata);
 
 xmpp_t *xmpphelper_new(xmppconn_handler callback, void *userdata);
 
@@ -24,6 +24,8 @@ void xmpphelper_join(xmpp_t *xmpp);
 int xmpphelper_release(xmpp_t *xmpp);
 
 xmpp_conn_t *xmpphelper_get_conn(xmpp_t *xmpp);
+
+const char * xmpphelper_get_bound_jid(xmpp_t *xmpp);
 
 #ifdef __cplusplus
 }

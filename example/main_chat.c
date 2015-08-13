@@ -21,10 +21,15 @@ static int chat_recv_handler(xmpp_conn_t *xmpp, xmppdata_t *xdata, void *udata)
     return 0;
 }
 
-static int conn_handler(void *ins, xmppconn_info_t *conninfo, void *udata)
+static int conn_handler(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *udata)
 {
-    fprintf(stderr, "\n    conn_handler(ins<%p>, conninfo<%p>, udata<%p>)\n", ins, conninfo, udata);
-    fprintf(stderr, "      status(%d) error(%d) errorType(%d) errorText '%s'\n", conninfo->connevent, conninfo->error, conninfo->errortype, conninfo->errortext);
+    if (conninfo->connevent != 0) {
+        fprintf(stderr, "  status(%d) error(%d) errorType(%d) errorText '%s'\n",
+                conninfo->connevent, conninfo->error, conninfo->errortype,
+                conninfo->errortext);
+        return -1;
+    }
+    printf( "\n\n       login full JID: %s\n\n\n", xmpphelper_get_bound_jid(xmpp));
     return 0;
 }
 

@@ -30,6 +30,7 @@ void xmpp_ping(xmpp_conn_t* conn, char* const id, char * const to, char * const 
     } else {
         xmpp_stanza_t *iq = NULL, *ping = NULL;
         xmpp_ctx_t *ctx;
+        const char *jid = xmpp_conn_get_bound_jid(conn);
 
         ctx = xmpp_conn_get_context(conn);
         iq = xmpp_stanza_new(ctx);
@@ -43,9 +44,9 @@ void xmpp_ping(xmpp_conn_t* conn, char* const id, char * const to, char * const 
         if (id != NULL && strlen(id) > 0) {
             xmpp_stanza_set_id(iq, id);
         } else {
-            xmpp_stanza_set_id(iq, xmpp_conn_get_jid(conn));
+            xmpp_stanza_set_id(iq, jid);
         }
-        xmpp_stanza_set_attribute(iq, "from", xmpp_conn_get_jid(conn));
+        xmpp_stanza_set_attribute(iq, "from", jid);
         xmpp_stanza_set_attribute(iq, "to", to);
 
         ping = xmpp_stanza_new(ctx);
@@ -78,7 +79,7 @@ void xmpp_iq_ack_result(xmpp_conn_t * const conn, char * const id, char * const 
         xmpp_stanza_set_name(iq, "iq");
         xmpp_stanza_set_type(iq, "result");
         xmpp_stanza_set_id(iq, id);
-        xmpp_stanza_set_attribute(iq, "from", xmpp_conn_get_jid(conn));
+        xmpp_stanza_set_attribute(iq, "from", xmpp_conn_get_bound_jid(conn));
         xmpp_stanza_set_attribute(iq, "to", to);
         xmpp_send(conn, iq);
         xmpp_stanza_release(iq);
