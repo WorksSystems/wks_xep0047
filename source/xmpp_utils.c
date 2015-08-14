@@ -1,10 +1,28 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
 #include "xmpp_utils.h"
+
+void nmtoken_generate(char *dst, int length)
+{
+    int i, random;
+
+    for (i = 0; i < length; i++) {
+        random = rand() % (26 + 26 + 10);
+        if (random < 26)
+            dst[i] = 'a' + random;
+        else if (random < 26 + 26)
+            dst[i] = 'A' + random - 26;
+        else
+            dst[i] = '0' + random - 26 - 26;
+    }
+    dst[length] = '\0';
+
+}
 
 char *xmpp_b64encode(const char *data, size_t dlen, char **encdata)
 {

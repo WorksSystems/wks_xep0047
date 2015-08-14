@@ -35,30 +35,34 @@ static int conn_handler(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *udata)
     return 0;
 }
 
-static int open_cb(xmpp_ibb_session_t *sess)
+static int open_cb(xmpp_ibb_session_t *sess, char *type)
 {
-    fprintf(stderr, "\n    %s()\n", __FUNCTION__);
-    strncpy(g_tojid, xmpp_ibb_get_peer(sess), sizeof(g_tojid));
+    printf("\n%s()\n", __FUNCTION__);
+    strncpy(g_tojid, xmpp_ibb_get_remote_jid(sess), sizeof(g_tojid));
     g_session = sess;
-    putchar(' ');
+    if (strncmp("result", type, 6) == 0)
+        printf("%s() result\n", __FUNCTION__);
     return 0;
 }
 
-static int close_cb(xmpp_ibb_session_t *sess)
+static int close_cb(xmpp_ibb_session_t *sess, char *type)
 {
-    fprintf(stderr, "\n    %s()\n", __FUNCTION__);
+    printf("\n%s()\n", __FUNCTION__);
     xmpp_ibb_release(g_session);
     g_session = NULL;
     g_tojid[0] = '\0';
-    putchar(' ');
+    if (strncmp("result", type, 6) == 0)
+        printf("%s() result\n", __FUNCTION__);
     return 0;
 }
 
 static int recv_cb(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
 {
-    fprintf(stderr, "\n    %s()\n", __FUNCTION__);
-    fprintf(stderr, "    data'%s' size(%d)\n", (char *) xdata->data, xdata->size);
-    putchar(' ');
+    printf("\n  %s()\n", __FUNCTION__);
+    if (xdata != NULL)
+        printf("    data'%s' size(%d)\n", (char *) xdata->data, xdata->size);
+    else
+        printf("  %s() result\n", __FUNCTION__);
     return 0;
 }
 
@@ -102,7 +106,11 @@ int main(int argc, char *argv[])
     xmpp = xmpphelper_new(conn_handler, NULL);
     xmpphelper_connect(xmpp, host, port, jid, pass);
     conn = xmpphelper_get_conn(xmpp);
-    xmpp_ibb_register(conn, open_cb, close_cb, recv_cb);
+    xmpp_ibb_reg_funcs_t regfuncs;
+    regfuncs.open_cb = open_cb;
+    regfuncs.close_cb = close_cb;
+    regfuncs.recv_cb = recv_cb;
+    xmpp_ibb_register(conn, &regfuncs);
     xmpphelper_run(xmpp);
 
     while (looping) {

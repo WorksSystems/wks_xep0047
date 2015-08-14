@@ -23,7 +23,7 @@ typedef enum
     STATE_OPENING,
     STATE_READY,
     STATE_SENDING,
-    STATE_CLOSED,
+    STATE_CLOSING,
     STATE_FAILED
 } SEND_STATE;
 
@@ -51,63 +51,99 @@ typedef struct _xmpp_ibb_session_t
 
 } xmpp_ibb_session_t;
 
-typedef int (*XMPP_IBB_Open_CB)(xmpp_ibb_session_t*);
-typedef void (*XMPP_IBB_Recv_CB)(xmpp_ibb_session_t*);
-typedef void (*XMPP_IBB_Send_CB)(xmpp_ibb_session_t*); //result 0 for success, others for failure
-typedef void (*XMPP_IBB_Close_CB)(xmpp_ibb_session_t*);
+/**
+ *
+ * @param sess session of IBB
+ * @param type type of stanza, set or result
+ * @return
+ */
+typedef int (*xmpp_ibb_open_cb)(xmpp_ibb_session_t *sess, char *type);
 
-typedef struct _XMPP_IBB_Ops_t
-{
+/**
+ *
+ * @param sess session of IBB
+ * @param type type of stanza set or result
+ * @return 0 is OK, others error.
+ */
+typedef int (*xmpp_ibb_close_cb)(xmpp_ibb_session_t *sess, char *type);
 
-    XMPP_IBB_Open_CB ibb_open_fp;
-    XMPP_IBB_Recv_CB ibb_recv_fp;
-    XMPP_IBB_Send_CB ibb_send_fp;
-    XMPP_IBB_Close_CB ibb_close_fp;
-
-} XMPP_IBB_Ops_t;
-
-int XMPP_IBB_Send(xmpp_ibb_session_t *session_handle, char *message);
-
-int XMPP_IBB_Establish(xmpp_conn_t * const conn, char *destination, xmpp_ibb_session_t *session_handle);
-
-void XMPP_IBB_Ack_Send(xmpp_ibb_session_t *handle);
-
-void XMPP_IBB_Close(xmpp_ibb_session_t *handle);
-
-void XMPP_IBB_Init(xmpp_conn_t * const conn, XMPP_IBB_Ops_t* ibb_ops);
-
-void XMPP_IBB_Release(xmpp_conn_t * const conn);
-
-char* XMPP_IBB_Get_Sid(xmpp_stanza_t * const stanza);
-/* Get IBB handle in order to get Session ID */
-xmpp_ibb_session_t* XMPP_Get_IBB_Handle(void);
-/* Get IBB Session Handle by Sid in order to get blocksize, data payload */
-xmpp_ibb_session_t* XMPP_Get_IBB_Session_Handle(char* szSid);
-
-/*Add a session to the Queue */
-void XMPP_IBB_Add_Session_Queue(xmpp_ibb_session_t* ibb_ssn_new);
-
-typedef int (*xmpp_ibb_open_cb)(xmpp_ibb_session_t *sess);
-typedef int (*xmpp_ibb_close_cb)(xmpp_ibb_session_t *sess);
+/**
+ *
+ * @param sess session of IBB
+ * @param xdata xdata if NULL, means stanza type is 'result',
+ *          otherwise stanza type is set, and message data in xdata
+ * @return 0 is OK, others error.
+ */
 typedef int (*xmpp_ibb_data_cb)(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
-void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_open_cb open_cb, xmpp_ibb_close_cb close_cb, xmpp_ibb_data_cb recv_cb);
+typedef struct _xmpp_ibb_reg_funcs_t {
+    xmpp_ibb_open_cb open_cb;
+    xmpp_ibb_close_cb close_cb;
+    xmpp_ibb_data_cb recv_cb;
+} xmpp_ibb_reg_funcs_t;
 
+/**
+ *
+ * @param conn conn of libstrophe.
+ * @param reg_funcs register functions for IBB
+ */
+void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_reg_funcs_t *reg_funcs);
+
+/**
+ *
+ * @param conn conn of libstrophe.
+ */
 void xmpp_ibb_unregister(xmpp_conn_t * const conn);
 
-xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const peer, char * const sid);
+/**
+ *
+ * @param conn conn of libstrophe
+ * @param jid target jid to establish
+ * @param sid if set, specific session id, otherwise use random generate.
+ * @return session of IBB
+ */
+xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const jid, char * const sid);
 
+/**
+ *
+ * @param sess session of IBB
+ */
 void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess);
 
+/**
+ *
+ * @param sess session of IBB
+ */
 void xmpp_ibb_release(xmpp_ibb_session_t *sess);
 
+/**
+ *
+ * @param sess session of IBB
+ * @param xdata message data to send
+ * @return
+ */
 int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
+/**
+ *
+ * @param sess session of IBB
+ * @return conn of libstrophe
+ */
 xmpp_conn_t * xmpp_ibb_get_conn(xmpp_ibb_session_t *sess);
 
+/**
+ *
+ * @param sess session of IBB
+ * @return session id
+ */
 char * xmpp_ibb_get_sid(xmpp_ibb_session_t *sess);
 
-char * xmpp_ibb_get_peer(xmpp_ibb_session_t *sess);
+/**
+ *
+ * @param sess session of IBB
+ * @return remote jid
+ */
+char * xmpp_ibb_get_remote_jid(xmpp_ibb_session_t *sess);
 
 #ifdef __cplusplus
 }

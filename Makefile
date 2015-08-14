@@ -27,7 +27,8 @@ OBJS = ${patsubst %.c,%.o,${SRCS}}
 MSRCS=${wildcard ${EXMPATH}/*.c} 
 MOBJS = ${patsubst %.c,%.o,${MSRCS}}
 
-TESTTARGET=main main_chat main_ibb
+#TESTTARGET=main main_chat main_ibb
+TESTTARGET=main_chat main_ibb
 
 all: libraries testprogram
 
