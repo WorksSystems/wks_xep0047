@@ -40,16 +40,6 @@ static bool _find_sid(void *item, void *key)
     return false;
 }
 
-xmpp_ibb_session_t *ibb_get_handle_from_queue(char *id, char *sid)
-{
-    xmpp_ibb_session_t *sess = NULL;
-    if ((sess = ilist_finditem_func(g_list, _find_sid, sid)) != NULL)
-        return sess;
-    else if ((sess = ilist_finditem_func(g_list, _find_id, id)) != NULL)
-        return sess;
-    return NULL;
-}
-
 static xmpp_ibb_session_t * _ibb_session_init(xmpp_conn_t * const conn, char * const peer, char * const sid)
 {
     xmpp_ibb_session_t *sess = NULL;
@@ -61,12 +51,10 @@ static xmpp_ibb_session_t * _ibb_session_init(xmpp_conn_t * const conn, char * c
         return NULL;
     }
     sess->conn = conn;
-//    strncpy(sess->id, generate_random_id(), sizeof(sess->id));
     nmtoken_generate(sess->id, 8);
     if (sid != NULL && strlen(sid) > 0) {
         strncpy(sess->sid, sid, sizeof(sess->sid));
     } else {
-//        strncpy(sess->sid, generate_random_id(), sizeof(sess->sid));
         nmtoken_generate(sess->sid, 8);
     }
     sess->block_size = IBB_DEFAULT_BLOCK_SIZE;
@@ -339,4 +327,9 @@ void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 void xmpp_ibb_release(xmpp_ibb_session_t *sess)
 {
     free(sess);
+}
+
+xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid)
+{
+    return ilist_finditem_func(g_list, _find_sid, sid);
 }

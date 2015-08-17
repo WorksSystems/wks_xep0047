@@ -145,6 +145,13 @@ char * xmpp_ibb_get_sid(xmpp_ibb_session_t *sess);
  */
 char * xmpp_ibb_get_remote_jid(xmpp_ibb_session_t *sess);
 
+/**
+ *
+ * @param sid session id
+ * @return session of IBB, if not found, return NULL
+ */
+xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid);
+
 #ifdef __cplusplus
 }
 #endif
