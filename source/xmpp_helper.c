@@ -38,11 +38,11 @@ static void _conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t stat
         fprintf(stderr, "\n    unknown status(%d) \n\n", status);
     }
 
-    if (xmpp->callback != NULL) {
+    if (xmpp != NULL && xmpp->callback != NULL) {
         xmppconn_info_t conninfo;
         conninfo.connevent = (int) status;
         conninfo.error = error;
-        if (conninfo.error != 0 && stream_error != NULL) {
+        if (stream_error != NULL) {
             conninfo.errortype = (int) stream_error->type;
             conninfo.errortext = stream_error->text;
         } else {
@@ -81,7 +81,7 @@ void xmpphelper_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pas
 {
     xmpp_conn_set_jid(xmpp->conn, jid);
     xmpp_conn_set_pass(xmpp->conn, pass);
-    xmpp_connect_client(xmpp->conn, NULL, 0, _conn_handler, xmpp);
+    xmpp_connect_client(xmpp->conn, host, port, _conn_handler, xmpp);
 }
 
 void xmpphelper_run(xmpp_t *xmpp)
