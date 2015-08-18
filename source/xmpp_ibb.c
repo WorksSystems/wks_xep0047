@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <time.h>
 
 #include "strophe.h"
@@ -36,6 +37,15 @@ static bool _find_sid(void *item, void *key)
     xmpp_ibb_session_t *sess;
     sess = (xmpp_ibb_session_t *) item;
     if (strncmp(sess->sid, (char *) key, strlen(key)) == 0)
+        return true;
+    return false;
+}
+
+static bool _find_peer(void *item, void *key)
+{
+    xmpp_ibb_session_t *sess;
+    sess = (xmpp_ibb_session_t *) item;
+    if (strncmp(sess->peer, (char *) key, strlen(key)) == 0)
         return true;
     return false;
 }
@@ -149,6 +159,41 @@ static int _ibb_result_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const s
     return 1;
 }
 
+static int _ibb_pres_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+{
+    char *type;
+fprintf(stderr, "\n  %s-%d: %s()\n\n", __FILE__, __LINE__, __FUNCTION__);
+    type = xmpp_stanza_get_type(stanza);
+    if (strncmp(type, "unavailable", 11) == 0) {
+        char *from;
+        xmpp_ibb_session_t * sess;
+        xmpp_ibb_userdata_t * udata = (xmpp_ibb_userdata_t *) userdata;
+        from = xmpp_stanza_get_attribute(stanza, "from");
+        sess = ilist_finditem_func(g_list, _find_peer, from);
+        if (sess != NULL) {
+            printf("target '%s' unavailable\n", from);
+            udata->close_cb(sess, "set");
+        }
+    }
+    time(&glast_ping_time);
+    return 1;
+}
+
+static int _ibb_error_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
+{
+    xmpp_ibb_session_t * sess;
+    char *id;
+
+    id = xmpp_stanza_get_id(stanza);
+    sess = ilist_finditem_func(g_list, _find_id, id);
+    if (sess != NULL) {
+        sess->state = STATE_FAILED;
+    }
+
+    time(&glast_ping_time);
+    return 1;
+}
+
 void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_reg_funcs_t *reg)
 {
     static xmpp_ibb_userdata_t s_ibb_udata;
@@ -163,22 +208,40 @@ void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_reg_funcs_t *reg)
     g_list = ilist_new();
     xmpp_handler_add(conn, _ibb_set_handler, XMLNS_IBB, "iq", "set", &s_ibb_udata);
     xmpp_handler_add(conn, _ibb_result_handler, NULL, "iq", "result", &s_ibb_udata);
-//    xmpp_handler_add(conn, _error_handler, NULL, "iq", "error", ibb_ops);
+    xmpp_handler_add(conn, _ibb_error_handler, NULL, "iq", "error", &s_ibb_udata);
+    xmpp_handler_add(conn, _ibb_pres_handler, NULL, "presence", "unavailable", &s_ibb_udata);
 }
 
 void xmpp_ibb_unregister(xmpp_conn_t * const conn)
 {
     xmpp_handler_delete(conn, _ibb_set_handler);
     xmpp_handler_delete(conn, _ibb_result_handler);
+    xmpp_handler_delete(conn, _ibb_error_handler);
+    xmpp_handler_delete(conn, _ibb_pres_handler);
     ilist_destroy(g_list);
 }
 
 int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
 {
+    int i;
     xmpp_stanza_t *iq, *data, *text;
     char *encode, seqchar[16] = "";
     xmpp_ctx_t *ctx;
     const char *jid = xmpp_conn_get_bound_jid(sess->conn);
+
+    for (i = 0; i < 50; i++) {
+        if (sess->state == STATE_FAILED) {
+            fprintf(stderr, "xmpp_ibb_send_data() failed.\n");
+            return -1;
+        } else if (sess->state == STATE_READY) {
+            break ;
+        } else if (sess->state == STATE_OPENING) {
+            usleep(100000);
+        } else {
+            usleep(100000);
+            fprintf(stderr, "unknown state(%d).\n", sess->state);
+        }
+    }
 
     if (sess->state != STATE_READY) {
         fprintf(stderr, "xmpp_ibb_send_data() failed. state(%d) not ready.\n", sess->state);
@@ -258,6 +321,9 @@ xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const pe
     char sizetemp[6] = "";
     int size;
 
+    if (peer == NULL || strlen(peer) == 0) {
+        return NULL;
+    }
     sess = _ibb_session_init(conn, peer, sid);
     if (sess == NULL) {
         return NULL;

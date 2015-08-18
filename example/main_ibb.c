@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     xmpp_t *xmpp;
     xmpp_conn_t *conn;
     char msg[1024] = "";
-    char *host = "localhost", *jid = "user1@localhost/res1", *pass = "1234";
+    char *host = "localhost", *jid = "user1@localhost", *pass = "1234";
     int port = 5222;
 
     while ((opt = getopt(argc, argv, "s:p:w:j:t:h")) != -1) {
