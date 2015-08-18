@@ -92,19 +92,20 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
     type = xmpp_stanza_get_type(stanza);
     if ((child = xmpp_stanza_get_child_by_name(stanza, "open")) != NULL) {
         char *sid = xmpp_stanza_get_attribute(child, "sid");
+        xmpp_iq_ack_result(conn, id, from);
         sess = _ibb_session_init(conn, from, sid);
         strncpy(sess->id, id, sizeof(sess->id));
         strncpy(sess->peer, from, sizeof(sess->peer));
         sess->state = STATE_READY;
         udata->open_cb(sess, type);
         ilist_add(g_list, sess);
-        xmpp_iq_ack_result(sess->conn, sess->id, sess->peer);
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "data")) != NULL) {
         char *sid = xmpp_stanza_get_attribute(child, "sid");
         sess = ilist_finditem_func(g_list, _find_sid, sid);
         if (sess != NULL) {
             xmppdata_t xdata;
             char *intext = xmpp_stanza_get_text(child);
+            xmpp_iq_ack_result(conn, id, from);
             xdata.from = from;
             strncpy(sess->id, id, sizeof(sess->id));
             sess->recv_seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
@@ -112,15 +113,14 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             udata->recv_cb(sess, &xdata);
             xmpp_b64free(sess->recv_data);
             sess->recv_data = NULL;
-            xmpp_iq_ack_result(sess->conn, sess->id, sess->peer);
         }
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "close")) != NULL) {
         char *sid = xmpp_stanza_get_attribute(child, "sid");
         sess = ilist_finditem_func(g_list, _find_sid, sid);
         if (sess != NULL) {
+            xmpp_iq_ack_result(conn, id, from);
             ilist_remove(g_list, sess);
             strncpy(sess->id, id, sizeof(sess->id));
-            xmpp_iq_ack_result(sess->conn, sess->id, sess->peer);
             sess->state = STATE_NONE;
             udata->close_cb(sess, type);
         }
