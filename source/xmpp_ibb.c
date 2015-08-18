@@ -387,11 +387,11 @@ void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 
     sess->state = STATE_CLOSING;
 
-    ilist_remove(g_list, sess);
 }
 
 void xmpp_ibb_release(xmpp_ibb_session_t *sess)
 {
+    ilist_remove(g_list, sess);
     free(sess);
 }
 

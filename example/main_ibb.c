@@ -37,7 +37,7 @@ static int conn_handler(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *udata)
 
 static int open_cb(xmpp_ibb_session_t *sess, char *type)
 {
-    printf("\n%s()\n", __FUNCTION__);
+    printf("\n  %s() type '%s'\n", __FUNCTION__, type);
     strncpy(g_tojid, xmpp_ibb_get_remote_jid(sess), sizeof(g_tojid));
     g_session = sess;
     if (strncmp("result", type, 6) == 0)
@@ -47,7 +47,7 @@ static int open_cb(xmpp_ibb_session_t *sess, char *type)
 
 static int close_cb(xmpp_ibb_session_t *sess, char *type)
 {
-    printf("\n%s()\n", __FUNCTION__);
+    printf("\n  %s() type '%s'\n", __FUNCTION__, type);
     xmpp_ibb_release(g_session);
     g_session = NULL;
     g_tojid[0] = '\0';
@@ -135,7 +135,6 @@ int main(int argc, char *argv[])
                     continue;
                 }
                 xmpp_ibb_disconnect(g_session);
-                xmpp_ibb_release(g_session);
                 g_session = NULL;
                 g_tojid[0] = '\0';
                 break;
