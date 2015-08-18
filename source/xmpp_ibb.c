@@ -162,7 +162,7 @@ static int _ibb_result_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const s
 static int _ibb_pres_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
     char *type;
-fprintf(stderr, "\n  %s-%d: %s()\n\n", __FILE__, __LINE__, __FUNCTION__);
+
     type = xmpp_stanza_get_type(stanza);
     if (strncmp(type, "unavailable", 11) == 0) {
         char *from;
