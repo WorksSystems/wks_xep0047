@@ -98,7 +98,8 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
         strncpy(sess->id, id, sizeof(sess->id));
         strncpy(sess->peer, from, sizeof(sess->peer));
         sess->state = STATE_READY;
-        udata->open_cb(sess, type);
+        if (udata != NULL && udata->open_cb != NULL)
+            udata->open_cb(sess, type);
         ilist_add(g_list, sess);
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "data")) != NULL) {
         char *sid = xmpp_stanza_get_attribute(child, "sid");
@@ -111,7 +112,8 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             strncpy(sess->id, id, sizeof(sess->id));
             sess->recv_seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
             xmpp_b64decode(intext, (char **) &xdata.data, (size_t *) &xdata.size);
-            udata->recv_cb(sess, &xdata);
+            if (udata != NULL && udata->recv_cb != NULL)
+                udata->recv_cb(sess, &xdata);
             xmpp_b64free(sess->recv_data);
             sess->recv_data = NULL;
         }
@@ -123,7 +125,8 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             ilist_remove(g_list, sess);
             strncpy(sess->id, id, sizeof(sess->id));
             sess->state = STATE_NONE;
-            udata->close_cb(sess, type);
+            if (udata != NULL && udata->close_cb != NULL)
+                udata->close_cb(sess, type);
         }
     }
 
@@ -144,14 +147,17 @@ static int _ibb_result_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const s
     if (sess != NULL) {
         if (sess->state == STATE_OPENING) {
             //session created ack
-            udata->open_cb(sess, type);
+            if (udata != NULL && udata->open_cb != NULL)
+                udata->open_cb(sess, type);
             sess->state = STATE_READY;
         } else if (sess->state == STATE_SENDING) {
-            udata->recv_cb(sess, NULL);
+            if (udata != NULL && udata->recv_cb != NULL)
+                udata->recv_cb(sess, NULL);
             sess->state = STATE_READY;
             //data sent ack
         } else if (sess->state == STATE_CLOSING) {
-            udata->close_cb(sess, type);
+            if (udata != NULL && udata->close_cb != NULL)
+                udata->close_cb(sess, type);
             sess->state = STATE_NONE;
         }
     }
@@ -173,7 +179,8 @@ static int _ibb_pres_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const sta
         sess = ilist_finditem_func(g_list, _find_peer, from);
         if (sess != NULL) {
             printf("target '%s' unavailable\n", from);
-            udata->close_cb(sess, "set");
+            if (udata != NULL && udata->close_cb != NULL)
+                udata->close_cb(sess, "result");
         }
     }
     time(&glast_ping_time);
@@ -195,7 +202,8 @@ static int _ibb_error_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const st
         xmpp_error_stanza(error, &xerr);
         xmpp_ibb_userdata_t * udata = (xmpp_ibb_userdata_t *) userdata;
         sess->state = STATE_FAILED;
-        udata->error_cb(sess, &xerr);
+        if (udata != NULL && udata->error_cb != NULL)
+            udata->error_cb(sess, &xerr);
     }
 
     time(&glast_ping_time);
