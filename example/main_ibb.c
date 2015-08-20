@@ -80,12 +80,62 @@ void print_usage()
     printf("Usage: command [-s host -p port -j jid -w password]\n");
 }
 
+static bool doCmd(xmpp_t *xmpp, char cmd)
+{
+    int looping = true;
+    xmpp_conn_t *conn = xmpphelper_get_conn(xmpp);
+    switch (cmd)
+    {
+        case 'r':
+            xmpp_ibb_release(g_session);
+            break;
+        case 'q':
+            xmpphelper_stop(xmpp);
+            looping = false;
+            break;
+        case 'e':
+            printf("input target jid to establish session: ");
+            fgets(g_tojid, sizeof(g_tojid), stdin);
+            fprintf(stderr, "tojid '%s' size(%ld)", g_tojid, strlen(g_tojid));
+            g_tojid[strlen(g_tojid) - 1] = '\0';
+            g_session = xmpp_ibb_establish(conn, g_tojid, NULL);
+            break;
+        case 'c':
+            if (g_session == NULL || strlen(g_tojid) == 0) {
+                printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
+                return looping;
+            }
+            xmpp_ibb_disconnect(g_session);
+            g_session = NULL;
+            g_tojid[0] = '\0';
+            break;
+        case 's':
+        {
+            xmppdata_t xdata;
+            char msg[1024] = "";
+            if (g_session == NULL || strlen(g_tojid) == 0) {
+                printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
+                return looping;
+            }
+            printf("input messages to target jid '%s': ", g_tojid);
+            fgets(msg, sizeof(msg), stdin);
+            xdata.data = msg;
+            xdata.size = strlen(msg);
+            xmpp_ibb_send_data(g_session, &xdata);
+            break;
+        }
+        default:
+            printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
+            break;
+    }
+    return looping;
+}
+
 int main(int argc, char *argv[])
 {
     bool looping = true;
     int opt;
     xmpp_t *xmpp;
-    xmpp_conn_t *conn;
     char msg[1024] = "";
     char *host = "localhost", *jid = "user1@localhost", *pass = "1234";
     int port = 5222;
@@ -114,57 +164,17 @@ int main(int argc, char *argv[])
 
     xmpp = xmpphelper_new(conn_handler, NULL);
     xmpphelper_connect(xmpp, host, port, jid, pass);
-    conn = xmpphelper_get_conn(xmpp);
     xmpp_ibb_reg_funcs_t regfuncs;
     regfuncs.open_cb = open_cb;
     regfuncs.close_cb = close_cb;
     regfuncs.recv_cb = recv_cb;
     regfuncs.error_cb = error_cb;
-    xmpp_ibb_register(conn, &regfuncs);
+    xmpp_ibb_register(xmpphelper_get_conn(xmpp), &regfuncs);
     xmpphelper_run(xmpp);
 
     while (looping) {
         fgets(msg, sizeof(msg), stdin);
-        switch (msg[0])
-        {
-            case 'q':
-                xmpphelper_stop(xmpp);
-                looping = false;
-                break;
-            case 'e':
-                printf("input target jid to establish session: ");
-                fgets(g_tojid, sizeof(g_tojid), stdin);
-                fprintf(stderr, "tojid '%s' size(%ld)", g_tojid, strlen(g_tojid));
-                g_tojid[strlen(g_tojid) - 1] = '\0';
-                g_session = xmpp_ibb_establish(conn, g_tojid, NULL);
-                break;
-            case 'c':
-                if (g_session == NULL || strlen(g_tojid) == 0) {
-                    printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
-                    continue;
-                }
-                xmpp_ibb_disconnect(g_session);
-                g_session = NULL;
-                g_tojid[0] = '\0';
-                break;
-            case 's':
-            {
-                xmppdata_t xdata;
-                if (g_session == NULL || strlen(g_tojid) == 0) {
-                    printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
-                    continue;
-                }
-                printf("input messages to target jid '%s': ", g_tojid);
-                fgets(msg, sizeof(msg), stdin);
-                xdata.data = msg;
-                xdata.size = strlen(msg);
-                xmpp_ibb_send_data(g_session, &xdata);
-                break;
-            }
-            default:
-                printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
-                break;
-        }
+        looping = doCmd(xmpp, msg[0]);
     }
     xmpphelper_join(xmpp);
 

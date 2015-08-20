@@ -78,6 +78,7 @@ static xmpp_ibb_session_t * _ibb_session_init(xmpp_conn_t * const conn, char * c
     sess->recv_data = NULL;
     sess->next = NULL;
     sess->internal_next = NULL;
+    sess->userdata = NULL;
     return sess;
 }
 
@@ -106,16 +107,25 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
         sess = ilist_finditem_func(g_list, _find_sid, sid);
         if (sess != NULL) {
             xmppdata_t xdata;
+            int seq = 0;
             char *intext = xmpp_stanza_get_text(child);
             xmpp_iq_ack_result(conn, id, from);
             xdata.from = from;
             strncpy(sess->id, id, sizeof(sess->id));
-            sess->recv_seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
+            seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
+            if (seq != (sess->recv_seq + 1)) {
+                printf("sequence number is not continue. new seq %d last seq %d",
+                        seq, sess->recv_seq);
+            }
+            sess->recv_seq = seq;
             xmpp_b64decode(intext, (char **) &xdata.data, (size_t *) &xdata.size);
             if (udata != NULL && udata->recv_cb != NULL)
                 udata->recv_cb(sess, &xdata);
             xmpp_b64free(sess->recv_data);
             sess->recv_data = NULL;
+        } else {
+            printf("unknown session is not in handle.\n");
+            xmpp_iq_ack_error(conn, id, from, "cancel", "item-not-found");
         }
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "close")) != NULL) {
         char *sid = xmpp_stanza_get_attribute(child, "sid");
@@ -266,7 +276,7 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
     }
 
     if (!ilist_foundinlist(g_list, sess)) {
-        fprintf(stderr, "session not in handle, may be closed.\n");
+        fprintf(stderr, "session is not in handle, may be closed.\n");
         return -1;
     }
 
@@ -376,13 +386,18 @@ xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const pe
     return sess;
 }
 
-void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
+int xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 {
     xmpp_stanza_t *iq, *close;
     xmpp_ctx_t *ctx;
     const char *jid;
 
-    if (sess == NULL) { return; }
+    if (sess == NULL) { return -1; }
+
+    if (!ilist_foundinlist(g_list, sess)) {
+        fprintf(stderr, "session is not in handle, may be closed.\n");
+        return -1;
+    }
 
     jid = xmpp_conn_get_bound_jid(sess->conn);
     ctx = xmpp_conn_get_context(sess->conn);
@@ -408,6 +423,7 @@ void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 
     sess->state = STATE_CLOSING;
 
+    return 0;
 }
 
 void xmpp_ibb_release(xmpp_ibb_session_t *sess)

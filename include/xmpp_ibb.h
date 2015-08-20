@@ -25,7 +25,7 @@ typedef enum
     STATE_SENDING,
     STATE_CLOSING,
     STATE_FAILED
-} SEND_STATE;
+} xmpp_ibb_state_t;
 
 /* xmpp_ibb_data_t and xmpp_ibb_session_t is not used in version 1.0 now.
  It is used for multi IBB session handle
@@ -38,13 +38,14 @@ typedef struct _xmpp_ibb_session_t
     char sid[MAX_SID_LEN];
     int block_size;
     char peer[MAX_JID_LEN];
-    SEND_STATE state;
+    xmpp_ibb_state_t state;
 
     //for data
     int send_seq;
     int recv_seq;
     int data_ack_count; //how many data ack has been received
     unsigned char *recv_data;
+    void *userdata;
 
     struct _xmpp_ibb_session_t *next;
     struct _xmpp_ibb_session_t *internal_next;
@@ -116,8 +117,9 @@ xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const ji
 /**
  *
  * @param sess session of IBB
+ * @return 0 is OK, others error.
  */
-void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess);
+int xmpp_ibb_disconnect(xmpp_ibb_session_t *sess);
 
 /**
  *

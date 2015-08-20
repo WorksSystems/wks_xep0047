@@ -30,12 +30,16 @@ struct _xmpp_t
  */
 void xmpp_presence(xmpp_conn_t * const conn, char * const to);
 
-void xmpp_ping(xmpp_conn_t * const conn, char* const id, char * const to, char * const type);
+void xmpp_ping(xmpp_conn_t * const conn, char* const id, char * const to,
+        char * const type);
 
-void xmpp_iq_ack_result(xmpp_conn_t * const conn, char * const id, char * const to);
+void xmpp_iq_ack_result(xmpp_conn_t * const conn, char * const id,
+        char * const to);
+
+void xmpp_iq_ack_error(xmpp_conn_t * const conn, char * const id,
+        char * const to, char * const etype, char * const emesg);
 
 void xmpp_error_stanza(xmpp_stanza_t * const error, xmpperror_t *xerr);
-
 
 #ifdef __cplusplus
 }
