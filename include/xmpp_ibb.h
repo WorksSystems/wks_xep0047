@@ -76,10 +76,19 @@ typedef int (*xmpp_ibb_close_cb)(xmpp_ibb_session_t *sess, char *type);
  */
 typedef int (*xmpp_ibb_data_cb)(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
+/**
+ *
+ * @param sess session of IBB
+ * @param xerror error information
+ * @return 0 is OK, others error.
+ */
+typedef int (*xmpp_ibb_error_cb)(xmpp_ibb_session_t *sess, xmpperror_t *xerror);
+
 typedef struct _xmpp_ibb_reg_funcs_t {
     xmpp_ibb_open_cb open_cb;
     xmpp_ibb_close_cb close_cb;
     xmpp_ibb_data_cb recv_cb;
+    xmpp_ibb_error_cb error_cb;
 } xmpp_ibb_reg_funcs_t;
 
 /**

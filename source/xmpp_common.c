@@ -5,6 +5,7 @@
  *      Author: user
  */
 #include <string.h>
+#include <stdlib.h>
 
 #include "xmpp_common.h"
 
@@ -60,6 +61,20 @@ void xmpp_ping(xmpp_conn_t* conn, char* const id, char * const to, char * const 
         if (iq != NULL)
             xmpp_stanza_release(iq);
     }
+}
+
+void xmpp_error_stanza(xmpp_stanza_t * const error, xmpperror_t *xerr)
+{
+    char *mesg = NULL;
+    xmpp_stanza_t *stanza = NULL;
+
+    if (error == NULL || xerr == NULL) return;
+
+    xerr->code = atoi(xmpp_stanza_get_attribute(error, "code"));
+    strncpy(xerr->type, xmpp_stanza_get_type(error), sizeof(xerr->type));
+    stanza = xmpp_stanza_get_child_by_ns(error, XMPP_NS_STANZAS);
+    if (stanza != NULL) mesg = xmpp_stanza_get_name(stanza);
+    if (mesg != NULL) strncpy(xerr->mesg, mesg, sizeof(xerr->mesg));
 }
 
 void xmpp_iq_ack_result(xmpp_conn_t * const conn, char * const id, char * const to)

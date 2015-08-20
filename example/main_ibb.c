@@ -48,7 +48,7 @@ static int open_cb(xmpp_ibb_session_t *sess, char *type)
 static int close_cb(xmpp_ibb_session_t *sess, char *type)
 {
     printf("\n  %s() type '%s'\n", __FUNCTION__, type);
-    xmpp_ibb_release(g_session);
+    xmpp_ibb_release(sess);
     g_session = NULL;
     g_tojid[0] = '\0';
     if (strncmp("result", type, 6) == 0)
@@ -63,6 +63,15 @@ static int recv_cb(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
         printf("    data'%s' size(%d)\n", (char *) xdata->data, xdata->size);
     else
         printf("  %s() result\n", __FUNCTION__);
+    return 0;
+}
+
+static int error_cb(xmpp_ibb_session_t *sess, xmpperror_t *xerr)
+{
+    printf("\n  %s() code(%d) type '%s' msg '%s'\n", __FUNCTION__, xerr->code, xerr->type, xerr->mesg);
+    xmpp_ibb_release(sess);
+    g_session = NULL;
+    g_tojid[0] = '\0';
     return 0;
 }
 
@@ -110,11 +119,11 @@ int main(int argc, char *argv[])
     regfuncs.open_cb = open_cb;
     regfuncs.close_cb = close_cb;
     regfuncs.recv_cb = recv_cb;
+    regfuncs.error_cb = error_cb;
     xmpp_ibb_register(conn, &regfuncs);
     xmpphelper_run(xmpp);
 
     while (looping) {
-        printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
         fgets(msg, sizeof(msg), stdin);
         switch (msg[0])
         {
@@ -153,6 +162,7 @@ int main(int argc, char *argv[])
                 break;
             }
             default:
+                printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
                 break;
         }
     }

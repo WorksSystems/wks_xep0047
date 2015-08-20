@@ -34,6 +34,9 @@ void xmpp_ping(xmpp_conn_t * const conn, char* const id, char * const to, char *
 
 void xmpp_iq_ack_result(xmpp_conn_t * const conn, char * const id, char * const to);
 
+void xmpp_error_stanza(xmpp_stanza_t * const error, xmpperror_t *xerr);
+
+
 #ifdef __cplusplus
 }
 #endif

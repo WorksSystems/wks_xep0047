@@ -20,6 +20,7 @@ typedef struct _xmpp_ibb_userdata_t
     xmpp_ibb_open_cb open_cb;
     xmpp_ibb_close_cb close_cb;
     xmpp_ibb_data_cb recv_cb;
+    xmpp_ibb_error_cb error_cb;
     ilist_t *ilist;
 } xmpp_ibb_userdata_t;
 
@@ -187,7 +188,14 @@ static int _ibb_error_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const st
     id = xmpp_stanza_get_id(stanza);
     sess = ilist_finditem_func(g_list, _find_id, id);
     if (sess != NULL) {
+        xmpp_stanza_t *error;
+        xmpperror_t xerr;
+
+        error = xmpp_stanza_get_child_by_name(stanza, "error");
+        xmpp_error_stanza(error, &xerr);
+        xmpp_ibb_userdata_t * udata = (xmpp_ibb_userdata_t *) userdata;
         sess->state = STATE_FAILED;
+        udata->error_cb(sess, &xerr);
     }
 
     time(&glast_ping_time);
@@ -202,6 +210,7 @@ void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_reg_funcs_t *reg)
     s_ibb_udata.open_cb = reg->open_cb;
     s_ibb_udata.close_cb = reg->close_cb;
     s_ibb_udata.recv_cb = reg->recv_cb;
+    s_ibb_udata.error_cb = reg->error_cb;
     if (g_list != NULL) {
         ilist_destroy(g_list);
     }
@@ -363,9 +372,13 @@ void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 {
     xmpp_stanza_t *iq, *close;
     xmpp_ctx_t *ctx;
-    const char *jid = xmpp_conn_get_bound_jid(sess->conn);
+    const char *jid;
 
+    if (sess == NULL) { return; }
+
+    jid = xmpp_conn_get_bound_jid(sess->conn);
     ctx = xmpp_conn_get_context(sess->conn);
+
     iq = xmpp_stanza_new(ctx);
     close = xmpp_stanza_new(ctx);
     nmtoken_generate(sess->id, 8);
@@ -391,6 +404,8 @@ void xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
 
 void xmpp_ibb_release(xmpp_ibb_session_t *sess)
 {
+    if (sess == NULL) { return; }
+
     ilist_remove(g_list, sess);
     free(sess);
 }

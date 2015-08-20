@@ -14,8 +14,17 @@ char *xmpp_b64decode(const char *encdata, char **decdata, size_t *dlen);
 
 void xmpp_b64free(void *ptr);
 
+/**
+ * generate a nmtoken string
+ *
+ * @param dst [OUT] output string
+ * @param length nmtoken length
+ */
 void nmtoken_generate(char *dst, int length);
 
+/**
+ * item list function set
+ */
 typedef struct _ilist_t ilist_t;
 typedef bool (*find_fp)(void *item, void *key);
 
