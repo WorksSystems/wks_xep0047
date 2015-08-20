@@ -131,7 +131,7 @@ void xmpp_ibb_release(xmpp_ibb_session_t *sess);
  *
  * @param sess session of IBB
  * @param xdata message data to send
- * @return
+ * @return 0 is OK, others error.
  */
 int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
@@ -162,6 +162,16 @@ char * xmpp_ibb_get_remote_jid(xmpp_ibb_session_t *sess);
  * @return session of IBB, if not found, return NULL
  */
 xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid);
+
+/**
+ * allocate memory for userdata, memory will be released in xmpp_ibb_release()
+ *
+ * @param sess session of IBB
+ * @param udata [OUT] memory pointer for userdata
+ * @param size memory size required
+ * @return 0 is OK, others error.
+ */
+int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size);
 
 #ifdef __cplusplus
 }

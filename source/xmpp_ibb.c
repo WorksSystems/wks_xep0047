@@ -431,10 +431,42 @@ void xmpp_ibb_release(xmpp_ibb_session_t *sess)
     if (sess == NULL) { return; }
 
     ilist_remove(g_list, sess);
+    if (sess->userdata != NULL) {
+        free(sess->userdata);
+    }
     free(sess);
 }
 
 xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid)
 {
     return ilist_finditem_func(g_list, _find_sid, sid);
+}
+
+int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size)
+{
+    if (udata == NULL) {
+        return -1;
+    }
+    *udata = NULL;
+    if (sess == NULL || size <= 0) {
+        return -1;
+    }
+    if (!ilist_foundinlist(g_list, sess)) {
+        fprintf(stderr, "session is not in handle, may be closed.\n");
+        return -1;
+    }
+
+    if (sess->userdata != NULL) {
+        printf("free userdata, %s() called again.", __FUNCTION__);
+        free(sess->userdata);
+    }
+
+    sess->userdata = malloc(size);
+    if (sess->userdata == NULL) {
+        fprintf(stderr, "can not allocate memory.");
+        return -1;
+    }
+    *udata = sess->userdata;
+
+    return 0;
 }
