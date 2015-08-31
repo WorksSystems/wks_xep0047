@@ -257,16 +257,13 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
     const char *jid = xmpp_conn_get_bound_jid(sess->conn);
 
     for (i = 0; i < 50; i++) {
-        if (sess->state == STATE_FAILED) {
-            fprintf(stderr, "xmpp_ibb_send_data() failed.\n");
-            return -1;
-        } else if (sess->state == STATE_READY) {
+        if (sess->state == STATE_READY) {
             break ;
         } else if (sess->state == STATE_OPENING) {
             usleep(100000);
         } else {
-            usleep(100000);
-            fprintf(stderr, "unknown state(%d).\n", sess->state);
+            fprintf(stderr, "invalid state(%d).\n", sess->state);
+            return -1;
         }
     }
 
