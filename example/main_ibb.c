@@ -11,6 +11,7 @@
 
 char g_tojid[256] = "";
 xmpp_ibb_session_t *g_session;
+bool g_looping = true;
 #if 0
 static int chat_recv_handler(xmpp_conn_t *xmpp, xmppdata_t *xdata, void *udata)
 {
@@ -29,6 +30,7 @@ static int conn_handler(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *udata)
         fprintf(stderr, "  status(%d) error(%d) errorType(%d) errorText '%s'\n",
                 conninfo->connevent, conninfo->error, conninfo->errortype,
                 conninfo->errortext);
+        g_looping = false;
         return -1;
     }
     printf( "\n\n       login full JID: %s\n\n\n", xmpphelper_get_bound_jid(xmpp));
@@ -78,6 +80,11 @@ static int error_cb(xmpp_ibb_session_t *sess, xmpperror_t *xerr)
 void print_usage()
 {
     printf("Usage: command [-s host -p port -j jid -w password]\n");
+    printf("      -s host, xmpp server hostname or ip address\n");
+    printf("      -p port, xmpp service port\n");
+    printf("      -j jid, login bare JID\n");
+    printf("      -w password, login passowrd\n");
+    printf("      -f ,force TLS\n");
 }
 
 static bool doCmd(xmpp_t *xmpp, char cmd)
@@ -135,12 +142,13 @@ int main(int argc, char *argv[])
 {
     bool looping = true;
     int opt;
+    int force_tls = 0;
     xmpp_t *xmpp;
     char msg[1024] = "";
     char *host = "localhost", *jid = "user1@localhost", *pass = "1234";
     int port = 5222;
 
-    while ((opt = getopt(argc, argv, "s:p:w:j:t:h")) != -1) {
+    while ((opt = getopt(argc, argv, "s:p:w:j:t:hf")) != -1) {
         switch (opt)
         {
             case 's':
@@ -151,6 +159,9 @@ int main(int argc, char *argv[])
                 break;
             case 'w':
                 pass = optarg;
+                break;
+            case 'f':
+                force_tls = 1;
                 break;
             case 'j':
                 jid = optarg;
@@ -163,6 +174,9 @@ int main(int argc, char *argv[])
     }
 
     xmpp = xmpphelper_new(conn_handler, NULL);
+    if (force_tls == 1) {
+        xmpphelper_force_tls(xmpp);
+    }
     xmpphelper_connect(xmpp, host, port, jid, pass);
     xmpp_ibb_reg_funcs_t regfuncs;
     regfuncs.open_cb = open_cb;
@@ -172,9 +186,9 @@ int main(int argc, char *argv[])
     xmpp_ibb_register(xmpphelper_get_conn(xmpp), &regfuncs);
     xmpphelper_run(xmpp);
 
-    while (looping) {
-        fgets(msg, sizeof(msg), stdin);
+    while (looping && g_looping) {
         looping = doCmd(xmpp, msg[0]);
+        fgets(msg, sizeof(msg), stdin);
     }
     xmpphelper_join(xmpp);
 

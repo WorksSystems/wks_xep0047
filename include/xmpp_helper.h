@@ -13,19 +13,21 @@ typedef int (*xmppconn_handler)(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *u
 
 xmpp_t *xmpphelper_new(xmppconn_handler callback, void *userdata);
 
-void xmpphelper_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass);
+int xmpphelper_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass);
 
-void xmpphelper_run(xmpp_t *xmpp);
+int xmpphelper_run(xmpp_t *xmpp);
 
-void xmpphelper_stop(xmpp_t *xmpp);
+int xmpphelper_stop(xmpp_t *xmpp);
 
-void xmpphelper_join(xmpp_t *xmpp);
+int xmpphelper_join(xmpp_t *xmpp);
 
 int xmpphelper_release(xmpp_t *xmpp);
 
 xmpp_conn_t *xmpphelper_get_conn(xmpp_t *xmpp);
 
 const char * xmpphelper_get_bound_jid(xmpp_t *xmpp);
+
+int xmpphelper_force_tls(xmpp_t *xmpp);
 
 #ifdef __cplusplus
 }

@@ -454,7 +454,7 @@ int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size)
     }
 
     if (sess->userdata != NULL) {
-        printf("free userdata, %s() called again.", __FUNCTION__);
+        printf("%s() called again, free userdata.", __FUNCTION__);
         free(sess->userdata);
     }
 

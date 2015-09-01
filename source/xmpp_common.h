@@ -20,6 +20,7 @@ struct _xmpp_t
     xmpp_log_t *log;
     pthread_t pth;
     xmppconn_handler callback;
+    int force_tls;
     void *userdata;
 };
 
