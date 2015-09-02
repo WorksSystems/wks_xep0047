@@ -259,15 +259,18 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
     for (i = 0; i < 50; i++) {
         if (sess->state == STATE_READY) {
             break ;
+        } else if (sess->state == STATE_SENDING) {
+            fprintf(stderr, "skip invalid state(%d).\n", sess->state);
+            break ;
         } else if (sess->state == STATE_OPENING) {
             usleep(100000);
         } else {
             fprintf(stderr, "invalid state(%d).\n", sess->state);
-            return -1;
+            break ;
         }
     }
 
-    if (sess->state != STATE_READY) {
+    if (sess->state != STATE_SENDING && sess->state != STATE_READY) {
         fprintf(stderr, "xmpp_ibb_send_data() failed. state(%d) not ready.\n", sess->state);
         return -1;
     }
