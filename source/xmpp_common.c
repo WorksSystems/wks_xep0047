@@ -93,7 +93,7 @@ void xmpp_iq_ack_result(xmpp_conn_t * const conn, char * const id,
     iq = xmpp_stanza_new(ctx);
 
     if (iq == NULL || to == NULL) {
-        fprintf(stderr, "%s() failed.", __FUNCTION__);
+        fprintf(stderr, "%s() failed.\n", __FUNCTION__);
         return;
     }
 
@@ -120,7 +120,7 @@ void xmpp_iq_ack_error(xmpp_conn_t * const conn, char * const id,
     iq = xmpp_stanza_new(ctx);
 
     if (iq == NULL || to == NULL) {
-        fprintf(stderr, "%s() failed.", __FUNCTION__);
+        fprintf(stderr, "%s() failed.\n", __FUNCTION__);
         return;
     }
 

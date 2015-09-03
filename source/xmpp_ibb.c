@@ -114,7 +114,7 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             strncpy(sess->id, id, sizeof(sess->id));
             seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
             if (seq != (sess->recv_seq + 1)) {
-                printf("sequence number is not continue. new seq %d last seq %d",
+                printf("sequence number is not continue. new seq %d last seq %d\n",
                         seq, sess->recv_seq);
             }
             sess->recv_seq = seq;
@@ -457,13 +457,13 @@ int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size)
     }
 
     if (sess->userdata != NULL) {
-        printf("%s() called again, free userdata.", __FUNCTION__);
+        printf("%s() called again, free userdata.\n", __FUNCTION__);
         free(sess->userdata);
     }
 
     sess->userdata = malloc(size);
     if (sess->userdata == NULL) {
-        fprintf(stderr, "can not allocate memory.");
+        fprintf(stderr, "can not allocate memory.\n");
         return -1;
     }
     *udata = sess->userdata;

@@ -90,7 +90,7 @@ xmpp_conn_t* XMPP_Init(char* jid, char* pass, char* host, xmpp_ctx_t **pctx)
     xmpp_conn_t *conn;
     xmpp_log_t *log;
 
-    //printf("jid=[%s] pass=[%s] host=[%s]", jid, pass, host);
+    //printf("jid=[%s] pass=[%s] host=[%s]\n", jid, pass, host);
     xmpp_initialize();
 
     /* create a context */
@@ -119,7 +119,7 @@ void XMPP_Close(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
 
     xmpp_conn_release(conn);
 
-    fprintf(stderr, "Conn release!");
+    fprintf(stderr, "Conn release!\n");
 
     /* final shutdown of the library */
 
@@ -138,7 +138,7 @@ void XMPP_Close_Noshutdown(xmpp_conn_t *conn, xmpp_ctx_t *ctx)
 
     xmpp_conn_release(conn);
 
-    fprintf(stderr, "Conn release!");
+    fprintf(stderr, "Conn release!\n");
 
     /* final shutdown of the library */
 
