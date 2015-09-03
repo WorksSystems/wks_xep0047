@@ -51,6 +51,18 @@ static bool _find_peer(void *item, void *key)
     return false;
 }
 
+static void _ibb_session_release(xmpp_ibb_session_t *sess)
+{
+    if (sess == NULL) { return; }
+
+    ilist_remove(g_list, sess);
+    if (sess->userdata != NULL) {
+        free(sess->userdata);
+    }
+    free(sess);
+    printf("%s(): list size %d.", __FUNCTION__, ilist_size(g_list));
+}
+
 static xmpp_ibb_session_t * _ibb_session_init(xmpp_conn_t * const conn, char * const peer, char * const sid)
 {
     xmpp_ibb_session_t *sess = NULL;
@@ -132,11 +144,11 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
         sess = ilist_finditem_func(g_list, _find_sid, sid);
         if (sess != NULL) {
             xmpp_iq_ack_result(conn, id, from);
-            ilist_remove(g_list, sess);
             strncpy(sess->id, id, sizeof(sess->id));
             sess->state = STATE_NONE;
             if (udata != NULL && udata->close_cb != NULL)
                 udata->close_cb(sess, type);
+            _ibb_session_release(sess);
         }
     }
 
@@ -166,9 +178,10 @@ static int _ibb_result_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const s
             sess->state = STATE_READY;
             //data sent ack
         } else if (sess->state == STATE_CLOSING) {
+            sess->state = STATE_NONE;
             if (udata != NULL && udata->close_cb != NULL)
                 udata->close_cb(sess, type);
-            sess->state = STATE_NONE;
+            _ibb_session_release(sess);
         }
     }
 
@@ -191,6 +204,7 @@ static int _ibb_pres_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const sta
             printf("target '%s' unavailable\n", from);
             if (udata != NULL && udata->close_cb != NULL)
                 udata->close_cb(sess, "result");
+            _ibb_session_release(sess);
         }
     }
     time(&glast_ping_time);
@@ -214,6 +228,7 @@ static int _ibb_error_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const st
         sess->state = STATE_FAILED;
         if (udata != NULL && udata->error_cb != NULL)
             udata->error_cb(sess, &xerr);
+        _ibb_session_release(sess);
     }
 
     time(&glast_ping_time);
@@ -339,7 +354,7 @@ char * xmpp_ibb_get_remote_jid(xmpp_ibb_session_t *sess)
     return sess->peer;
 }
 
-xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const peer, char * const sid)
+xmpp_ibb_session_t *xmpp_ibb_open(xmpp_conn_t * const conn, char * const peer, char * const sid)
 {
     xmpp_ibb_session_t *sess;
     xmpp_stanza_t *iq, *open;
@@ -386,7 +401,7 @@ xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const pe
     return sess;
 }
 
-int xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
+int xmpp_ibb_close(xmpp_ibb_session_t *sess)
 {
     xmpp_stanza_t *iq, *close;
     xmpp_ctx_t *ctx;
@@ -424,17 +439,6 @@ int xmpp_ibb_disconnect(xmpp_ibb_session_t *sess)
     sess->state = STATE_CLOSING;
 
     return 0;
-}
-
-void xmpp_ibb_release(xmpp_ibb_session_t *sess)
-{
-    if (sess == NULL) { return; }
-
-    ilist_remove(g_list, sess);
-    if (sess->userdata != NULL) {
-        free(sess->userdata);
-    }
-    free(sess);
 }
 
 xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid)

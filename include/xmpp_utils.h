@@ -40,6 +40,8 @@ void * ilist_finditem_func(ilist_t *il, find_fp ff, void *key);
 
 bool ilist_foundinlist(ilist_t *il, void * item);
 
+int ilist_size(ilist_t *il);
+
 #ifdef __cplusplus
 }
 #endif

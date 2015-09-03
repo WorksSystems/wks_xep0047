@@ -104,6 +104,9 @@ ilist_t * ilist_new()
 {
     ilist_t *il;
     il = (ilist_t *) malloc(sizeof(struct _ilist_t));
+    if (il == NULL) {
+        return NULL;
+    }
     il->size = 0;
     il->head = NULL;
 //    il->tail = NULL;
@@ -113,6 +116,9 @@ ilist_t * ilist_new()
 static node_t * ilist_find_node(ilist_t *il, void *item)
 {
     node_t *nd;
+    if (il == NULL || item == NULL) {
+        return NULL;
+    }
     for (nd = il->head; nd != NULL; nd = nd->next) {
         if (nd->item == item)
             return nd;
@@ -123,6 +129,9 @@ static node_t * ilist_find_node(ilist_t *il, void *item)
 static void ilist_remove_node(ilist_t *il, node_t *nd)
 {
     node_t *tmp;
+    if (il == NULL) {
+        return;
+    }
     if (nd == NULL)
         return;
     if (il->head == nd) {
@@ -142,6 +151,9 @@ static void ilist_remove_node(ilist_t *il, node_t *nd)
 void ilist_destroy(ilist_t *il)
 {
     node_t *nd;
+    if (il == NULL) {
+        return;
+    }
     while ((nd = il->head) != NULL) {
         ilist_remove_node(il, nd);
     }
@@ -151,6 +163,9 @@ void ilist_destroy(ilist_t *il)
 void ilist_add(ilist_t *il, void *item)
 {
     node_t *nd;
+    if (il == NULL || item == NULL) {
+        return;
+    }
     nd = (node_t *) malloc(sizeof(struct _node_t));
     nd->item = item;
     nd->next = il->head;
@@ -161,6 +176,9 @@ void ilist_add(ilist_t *il, void *item)
 void ilist_remove(ilist_t *il, void *item)
 {
     node_t *nd;
+    if (il == NULL || item == NULL) {
+        return;
+    }
     nd = ilist_find_node(il, item);
     if (nd != NULL) {
         ilist_remove_node(il, nd);
@@ -184,6 +202,9 @@ void * ilist_finditem_func(ilist_t *il, find_fp ff, void *key)
 bool ilist_foundinlist(ilist_t *il, void * item)
 {
     node_t *nd;
+    if (il == NULL) {
+        return false;
+    }
     for (nd = il->head; nd != NULL; nd = nd->next) {
         if (nd->item == item) {
             return true;
@@ -191,3 +212,12 @@ bool ilist_foundinlist(ilist_t *il, void * item)
     }
     return false;
 }
+
+int ilist_size(ilist_t *il)
+{
+    if (il == NULL) {
+        return -1;
+    }
+    return il->size;
+}
+

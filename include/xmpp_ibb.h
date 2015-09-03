@@ -53,6 +53,9 @@ typedef struct _xmpp_ibb_session_t
 } xmpp_ibb_session_t;
 
 /**
+ * xmpp_ibb_open_cb
+ *
+ * callback function, when open required or ack result of open.
  *
  * @param sess session of IBB
  * @param type type of stanza, set or result
@@ -61,6 +64,10 @@ typedef struct _xmpp_ibb_session_t
 typedef int (*xmpp_ibb_open_cb)(xmpp_ibb_session_t *sess, char *type);
 
 /**
+ * xmpp_ibb_close_cb
+ *
+ * callback function, when close required or ack result of close,
+ *   IBB session freed after called.
  *
  * @param sess session of IBB
  * @param type type of stanza set or result
@@ -69,6 +76,9 @@ typedef int (*xmpp_ibb_open_cb)(xmpp_ibb_session_t *sess, char *type);
 typedef int (*xmpp_ibb_close_cb)(xmpp_ibb_session_t *sess, char *type);
 
 /**
+ * xmpp_ibb_data_cb
+ *
+ * callback function, when data received or ack result of send data.
  *
  * @param sess session of IBB
  * @param xdata xdata if NULL, means stanza type is 'result',
@@ -78,6 +88,10 @@ typedef int (*xmpp_ibb_close_cb)(xmpp_ibb_session_t *sess, char *type);
 typedef int (*xmpp_ibb_data_cb)(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
 /**
+ * xmpp_ibb_error_cb
+ *
+ * callback function, when error occurred,
+ *   IBB session freed after called.
  *
  * @param sess session of IBB
  * @param xerror error information
@@ -93,6 +107,9 @@ typedef struct _xmpp_ibb_reg_funcs_t {
 } xmpp_ibb_reg_funcs_t;
 
 /**
+ * xmpp_ibb_register
+ *
+ * register callback functions for IBB.
  *
  * @param conn conn of libstrophe.
  * @param reg_funcs register functions for IBB
@@ -100,34 +117,40 @@ typedef struct _xmpp_ibb_reg_funcs_t {
 void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_reg_funcs_t *reg_funcs);
 
 /**
+ * xmpp_ibb_unregister
+ *
+ * unregister callback for IBB.
  *
  * @param conn conn of libstrophe.
  */
 void xmpp_ibb_unregister(xmpp_conn_t * const conn);
 
 /**
+ * xmpp_ibb_open
+ *
+ * establish an IBB session.
  *
  * @param conn conn of libstrophe
  * @param jid target jid to establish
  * @param sid if set, specific session id, otherwise use random generate.
  * @return session of IBB
  */
-xmpp_ibb_session_t *xmpp_ibb_establish(xmpp_conn_t * const conn, char * const jid, char * const sid);
+xmpp_ibb_session_t *xmpp_ibb_open(xmpp_conn_t * const conn, char * const jid, char * const sid);
 
 /**
+ * xmpp_ibb_close
+ *
+ * close an IBB session.
  *
  * @param sess session of IBB
  * @return 0 is OK, others error.
  */
-int xmpp_ibb_disconnect(xmpp_ibb_session_t *sess);
+int xmpp_ibb_close(xmpp_ibb_session_t *sess);
 
 /**
+ * xmpp_ibb_send_data
  *
- * @param sess session of IBB
- */
-void xmpp_ibb_release(xmpp_ibb_session_t *sess);
-
-/**
+ * send data.
  *
  * @param sess session of IBB
  * @param xdata message data to send
@@ -136,6 +159,9 @@ void xmpp_ibb_release(xmpp_ibb_session_t *sess);
 int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 
 /**
+ * xmpp_ibb_get_conn
+ *
+ * get conn of libstrophe.
  *
  * @param sess session of IBB
  * @return conn of libstrophe
@@ -143,6 +169,9 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata);
 xmpp_conn_t * xmpp_ibb_get_conn(xmpp_ibb_session_t *sess);
 
 /**
+ * xmpp_ibb_get_sid
+ *
+ * get session id.
  *
  * @param sess session of IBB
  * @return session id
@@ -150,6 +179,9 @@ xmpp_conn_t * xmpp_ibb_get_conn(xmpp_ibb_session_t *sess);
 char * xmpp_ibb_get_sid(xmpp_ibb_session_t *sess);
 
 /**
+ * xmpp_ibb_get_remote_jid
+ *
+ * get remote JID.
  *
  * @param sess session of IBB
  * @return remote jid
@@ -157,6 +189,9 @@ char * xmpp_ibb_get_sid(xmpp_ibb_session_t *sess);
 char * xmpp_ibb_get_remote_jid(xmpp_ibb_session_t *sess);
 
 /**
+ * xmpp_ibb_get_session_by_sid
+ *
+ * get IBB session by session id.
  *
  * @param sid session id
  * @return session of IBB, if not found, return NULL
@@ -164,10 +199,12 @@ char * xmpp_ibb_get_remote_jid(xmpp_ibb_session_t *sess);
 xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid);
 
 /**
- * allocate memory for userdata, memory will be released in xmpp_ibb_release()
+ * xmpp_ibb_userdata_alloc
+ *
+ * allocate memory for user data, memory will be released in xmpp_ibb_release()
  *
  * @param sess session of IBB
- * @param udata [OUT] memory pointer for userdata
+ * @param udata [OUT] memory pointer for user data
  * @param size memory size required
  * @return 0 is OK, others error.
  */

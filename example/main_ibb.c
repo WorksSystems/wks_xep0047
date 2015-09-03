@@ -50,7 +50,7 @@ static int open_cb(xmpp_ibb_session_t *sess, char *type)
 static int close_cb(xmpp_ibb_session_t *sess, char *type)
 {
     printf("\n  %s() type '%s'\n", __FUNCTION__, type);
-    xmpp_ibb_release(sess);
+//    xmpp_ibb_release(sess);
     g_session = NULL;
     g_tojid[0] = '\0';
     if (strncmp("result", type, 6) == 0)
@@ -71,7 +71,7 @@ static int recv_cb(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
 static int error_cb(xmpp_ibb_session_t *sess, xmpperror_t *xerr)
 {
     printf("\n  %s() code(%d) type '%s' msg '%s'\n", __FUNCTION__, xerr->code, xerr->type, xerr->mesg);
-    xmpp_ibb_release(sess);
+//    xmpp_ibb_release(sess);
     g_session = NULL;
     g_tojid[0] = '\0';
     return 0;
@@ -94,7 +94,7 @@ static bool doCmd(xmpp_t *xmpp, char cmd)
     switch (cmd)
     {
         case 'r':
-            xmpp_ibb_release(g_session);
+//            xmpp_ibb_release(g_session);
             break;
         case 'q':
             xmpphelper_stop(xmpp);
@@ -105,14 +105,14 @@ static bool doCmd(xmpp_t *xmpp, char cmd)
             fgets(g_tojid, sizeof(g_tojid), stdin);
             fprintf(stderr, "tojid '%s' size(%ld)", g_tojid, strlen(g_tojid));
             g_tojid[strlen(g_tojid) - 1] = '\0';
-            g_session = xmpp_ibb_establish(conn, g_tojid, NULL);
+            g_session = xmpp_ibb_open(conn, g_tojid, NULL);
             break;
         case 'c':
             if (g_session == NULL || strlen(g_tojid) == 0) {
                 printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
                 return looping;
             }
-            xmpp_ibb_disconnect(g_session);
+            xmpp_ibb_close(g_session);
             g_session = NULL;
             g_tojid[0] = '\0';
             break;
