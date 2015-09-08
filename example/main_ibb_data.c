@@ -12,6 +12,32 @@
 char g_tojid[256] = "";
 xmpp_ibb_session_t *g_session;
 bool g_looping = true;
+FILE *g_send_fs = NULL;
+FILE *g_recv_fs = NULL;
+int   g_send_off = 0;
+
+static void _send(int off)
+{
+    fprintf(stderr, "%s(%d)\n", __FUNCTION__, off);
+    if (feof(g_send_fs)) {
+        xmpp_ibb_close(g_session);
+        return;
+    }
+    char msg[xmpp_ibb_get_blocksize(g_session) * 3 / 4];
+    xmppdata_t xdata;
+    fseek(g_send_fs, off, SEEK_SET);
+    xdata.size = fread(msg, 1, sizeof(msg), g_send_fs);
+    fprintf(stderr, "xdata.size(%d) = fread(msg, sizeof(msg)(%ld), 1, g_send_fs\n", xdata.size, sizeof(msg));
+    xdata.data = msg;
+    xmpp_ibb_send_data(g_session, &xdata);
+    g_send_off += xdata.size;
+}
+
+static void _recv(xmppdata_t *xdata)
+{
+    fwrite(xdata->data, 1, xdata->size, g_recv_fs);
+}
+
 
 static int conn_handler(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *udata)
 {
@@ -31,6 +57,22 @@ static int open_cb(xmpp_ibb_session_t *sess, char *type)
     printf("\n  %s() type '%s'\n", __FUNCTION__, type);
     strncpy(g_tojid, xmpp_ibb_get_remote_jid(sess), sizeof(g_tojid));
     g_session = sess;
+    if (g_recv_fs == NULL) {
+        char fname[64];
+        xmpp_conn_t *conn = xmpp_ibb_get_conn(sess);
+        const char *bjid = xmpp_conn_get_bound_jid(conn);
+        char *sid = xmpp_ibb_get_sid(sess);
+        snprintf(fname, sizeof(fname), "%s-%s.dat", bjid, sid);
+        char *pos;
+        while ((pos=strchr(fname, '/')) != NULL || (pos=strchr(fname, '@')) != NULL) {
+            *pos = '-';
+        }
+        fprintf(stderr, "fopen(%s, 'a')\n", fname);
+        g_recv_fs = fopen(fname, "a");
+        if (g_recv_fs == NULL) {
+            perror("fopen() recv failed.\n");
+        }
+    }
     if (strncmp("result", type, 6) == 0)
         printf("%s() result\n", __FUNCTION__);
     return 0;
@@ -42,6 +84,14 @@ static int close_cb(xmpp_ibb_session_t *sess, char *type)
 //    xmpp_ibb_release(sess);
     g_session = NULL;
     g_tojid[0] = '\0';
+    if (g_recv_fs != NULL) {
+        fclose(g_recv_fs);
+        g_recv_fs = NULL;
+    }
+    if (g_send_fs != NULL) {
+        fclose(g_send_fs);
+        g_send_fs = NULL;
+    }
     if (strncmp("result", type, 6) == 0)
         printf("%s() result\n", __FUNCTION__);
     return 0;
@@ -50,10 +100,13 @@ static int close_cb(xmpp_ibb_session_t *sess, char *type)
 static int recv_cb(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
 {
     printf("\n  %s()\n", __FUNCTION__);
-    if (xdata != NULL)
-        printf("    data'%s' size(%d)\n", (char *) xdata->data, xdata->size);
-    else
+    if (xdata != NULL) {
+        printf("    data'%p' size(%d)\n", (char *) xdata->data, xdata->size);
+        _recv(xdata);
+    } else {
         printf("  %s() result\n", __FUNCTION__);
+        _send(g_send_off);
+    }
     return 0;
 }
 
@@ -102,26 +155,39 @@ static bool doCmd(xmpp_t *xmpp, char cmd)
                 return looping;
             }
             xmpp_ibb_close(g_session);
+            if (g_send_fs != NULL) {
+                fclose(g_send_fs);
+                g_send_fs = NULL;
+            }
+            if (g_recv_fs != NULL) {
+                fclose(g_recv_fs);
+                g_recv_fs = NULL;
+            }
             g_session = NULL;
             g_tojid[0] = '\0';
             break;
         case 's':
         {
-            xmppdata_t xdata;
-            char msg[4096] = "";
             if (g_session == NULL || strlen(g_tojid) == 0) {
                 printf("session is not setup. session<%p> target'%s'.", g_session, g_tojid);
                 return looping;
             }
-            printf("input messages to target jid '%s': ", g_tojid);
+            printf("select file send to target jid '%s': ", g_tojid);
+            char msg[1024] = "";
             fgets(msg, sizeof(msg), stdin);
-            xdata.data = msg;
-            xdata.size = strlen(msg);
-            xmpp_ibb_send_data(g_session, &xdata);
+            char *pos;
+            if ((pos=strchr(msg, '\n')) != NULL)
+                    *pos = '\0';
+            g_send_fs = fopen(msg, "r");
+            if (g_send_fs == NULL) {
+                perror("fopen() send failed.\n");
+                return -1;
+            }
+            _send(g_send_off);
             break;
         }
         default:
-            printf("\n 'q' to quit, 'e' establish ibb session, 's' send message to '%s', 'c' close ibb session: ", g_tojid);
+            printf("\n 'q' to quit, 'e' establish ibb session, 's' send data to '%s', 'c' close ibb session: ", g_tojid);
             break;
     }
     return looping;

@@ -30,6 +30,14 @@ char *xmpp_b64encode(const char *data, size_t dlen, char **encdata)
     FILE *stream;
     int encSize = 4 * ceil((double) dlen / 3);
 
+    if (encdata == NULL) {
+        return NULL;
+    }
+    if (data == NULL || dlen <= 0) {
+        *encdata = NULL;
+        return NULL;
+    }
+
     *encdata = (char *) malloc(encSize + 1);
     stream = fmemopen((void *) *encdata, encSize + 1, "w");
 
@@ -66,6 +74,15 @@ char *xmpp_b64decode(const char *encdata, char **decdata, size_t *dlen)
     FILE *stream;
     int len;
 
+    if (decdata == NULL || dlen == NULL) {
+        return NULL;
+    }
+    if (encdata == NULL) {
+        *decdata = NULL;
+        *dlen = 0;
+        return NULL;
+    }
+
     *dlen = decDataLength(encdata);
     *decdata = (char *) malloc((*dlen) + 1);
     stream = fmemopen((void *) encdata, strlen(encdata), "r");
@@ -84,6 +101,9 @@ char *xmpp_b64decode(const char *encdata, char **decdata, size_t *dlen)
 
 void xmpp_b64free(void *ptr)
 {
+    if (ptr == NULL) {
+        return;
+    }
     free(ptr);
 }
 

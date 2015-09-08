@@ -210,6 +210,21 @@ xmpp_ibb_session_t *xmpp_ibb_get_session_by_sid(char *sid);
  */
 int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size);
 
+/**
+ * get block size of IBB session
+ *
+ * @param sess session of IBB
+ * @return block size
+ */
+int xmpp_ibb_get_blocksize(xmpp_ibb_session_t *sess);
+
+/**
+ * set block size for IBB session
+ * @param sess session of IBB
+ * @param bsize block size
+ */
+void xmpp_ibb_set_blocksize(xmpp_ibb_session_t *sess, int bsize);
+
 #ifdef __cplusplus
 }
 #endif

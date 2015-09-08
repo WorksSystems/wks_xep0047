@@ -106,11 +106,18 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
     type = xmpp_stanza_get_type(stanza);
     if ((child = xmpp_stanza_get_child_by_name(stanza, "open")) != NULL) {
         char *sid = xmpp_stanza_get_attribute(child, "sid");
-        xmpp_iq_ack_result(conn, id, from);
+        char *bsize = xmpp_stanza_get_attribute(child, "block-size");
+        if (sid == NULL || bsize == NULL) {
+            xmpp_iq_ack_error(conn, id, from, "cancel", "not-acceptable");
+            return 1;
+        } else {
+            xmpp_iq_ack_result(conn, id, from);
+        }
         sess = _ibb_session_init(conn, from, sid);
         strncpy(sess->id, id, sizeof(sess->id));
         strncpy(sess->peer, from, sizeof(sess->peer));
         sess->state = STATE_READY;
+        sess->block_size = atoi(bsize);
         if (udata != NULL && udata->open_cb != NULL)
             udata->open_cb(sess, type);
         ilist_add(g_list, sess);
@@ -169,13 +176,13 @@ static int _ibb_result_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const s
     if (sess != NULL) {
         if (sess->state == STATE_OPENING) {
             //session created ack
+            sess->state = STATE_READY;
             if (udata != NULL && udata->open_cb != NULL)
                 udata->open_cb(sess, type);
-            sess->state = STATE_READY;
         } else if (sess->state == STATE_SENDING) {
+            sess->state = STATE_READY;
             if (udata != NULL && udata->recv_cb != NULL)
                 udata->recv_cb(sess, NULL);
-            sess->state = STATE_READY;
             //data sent ack
         } else if (sess->state == STATE_CLOSING) {
             sess->state = STATE_NONE;
@@ -239,6 +246,10 @@ void xmpp_ibb_register(xmpp_conn_t * const conn, xmpp_ibb_reg_funcs_t *reg)
 {
     static xmpp_ibb_userdata_t s_ibb_udata;
 
+    if (conn == NULL || reg == NULL) {
+        return;
+    }
+
     srand(time(NULL)); //for generate random string
     s_ibb_udata.open_cb = reg->open_cb;
     s_ibb_udata.close_cb = reg->close_cb;
@@ -269,6 +280,12 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
     xmpp_stanza_t *iq, *data, *text;
     char *encode, seqchar[16] = "";
     xmpp_ctx_t *ctx;
+    if (sess == NULL || xdata == NULL) {
+        return -1;
+    }
+    if (xdata->size > (sess->block_size / 4 * 3)) {
+        return -1;
+    }
     const char *jid = xmpp_conn_get_bound_jid(sess->conn);
 
     for (i = 0; i < 50; i++) {
@@ -315,7 +332,11 @@ int xmpp_ibb_send_data(xmpp_ibb_session_t *sess, xmppdata_t *xdata)
     xmpp_stanza_set_attribute(data, "seq", seqchar);
 
     xmpp_b64encode(xdata->data, xdata->size, &encode);
-    xmpp_stanza_set_text_with_size(text, encode, strlen(encode));
+    if (encode == NULL) {
+        xmpp_stanza_set_text_with_size(text, "", 0);
+    } else {
+        xmpp_stanza_set_text_with_size(text, encode, strlen(encode));
+    }
 
     xmpp_stanza_add_child(data, text);
     xmpp_stanza_add_child(iq, data);
@@ -473,4 +494,20 @@ int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size)
     *udata = sess->userdata;
 
     return 0;
+}
+
+int xmpp_ibb_get_blocksize(xmpp_ibb_session_t *sess)
+{
+    if (sess == NULL) {
+        return 0;
+    }
+    return sess->block_size;
+}
+
+void xmpp_ibb_set_blocksize(xmpp_ibb_session_t *sess, int bsize)
+{
+    if (sess == NULL) {
+        return;
+    }
+    sess->block_size = bsize;
 }
