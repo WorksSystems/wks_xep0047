@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    xmpp = xmpphelper_new(conn_handler, NULL);
+    xmpp = xmpphelper_new(conn_handler, LOG_LEVEL_DEBUG, NULL);
     if (force_tls == 1) {
         xmpphelper_force_tls(xmpp);
     }
