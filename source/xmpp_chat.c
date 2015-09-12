@@ -49,7 +49,7 @@ static int _chat_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
         return 1;
     intext = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "body"));
 
-    printf("Incoming message from %s: %s\n", xmpp_stanza_get_attribute(stanza, "from"), intext);
+    //printf("Incoming message from %s: %s\n", xmpp_stanza_get_attribute(stanza, "from"), intext);
     xdata.from = xmpp_stanza_get_attribute(stanza, "from");
     xdata.data = (void *) intext;
     if (udata != NULL && udata->handler != NULL)

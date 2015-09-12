@@ -3,6 +3,8 @@
 #include <xmpp_helper.h>
 #include "xmpp_common.h"
 
+time_t glast_ping_time;
+
 static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
     char *to;

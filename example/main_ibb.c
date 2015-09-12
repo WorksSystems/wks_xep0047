@@ -161,7 +161,8 @@ int main(int argc, char *argv[])
                 return -1;
         }
     }
-    xmpp_log_t *log = xmpp_get_default_logger(XMPP_LEVEL_DEBUG);
+    //xmpp_log_t *log = xmpp_get_default_logger(XMPP_LEVEL_DEBUG);
+    xmpp_log_t *log = NULL;
     xmpp = xmpphelper_new(conn_handler, NULL, log, NULL);
     if (force_tls == 1) {
         xmpphelper_force_tls(xmpp);

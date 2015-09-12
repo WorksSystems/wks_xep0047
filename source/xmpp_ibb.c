@@ -60,7 +60,7 @@ static void _ibb_session_release(xmpp_ibb_session_t *sess)
         free(sess->userdata);
     }
     free(sess);
-    printf("%s(): list size %d.", __FUNCTION__, ilist_size(g_list));
+    //printf("%s(): list size %d.", __FUNCTION__, ilist_size(g_list));
 }
 
 static xmpp_ibb_session_t * _ibb_session_init(xmpp_conn_t * const conn, char * const peer, char * const sid)
@@ -133,8 +133,7 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             strncpy(sess->id, id, sizeof(sess->id));
             seq = atoi(xmpp_stanza_get_attribute(child, "seq"));
             if (seq != (sess->recv_seq + 1)) {
-                printf("sequence number is not continue. new seq %d last seq %d\n",
-                        seq, sess->recv_seq);
+                //printf("sequence number is not continue. new seq %d last seq %d\n", seq, sess->recv_seq);
             }
             sess->recv_seq = seq;
             xmpp_b64decode(intext, (char **) &xdata.data, (size_t *) &xdata.size);
@@ -143,7 +142,7 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             xmpp_b64free(sess->recv_data);
             sess->recv_data = NULL;
         } else {
-            printf("unknown session is not in handle.\n");
+            //printf("unknown session is not in handle.\n");
             xmpp_iq_ack_error(conn, id, from, "cancel", "item-not-found");
         }
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "close")) != NULL) {
@@ -208,7 +207,7 @@ static int _ibb_pres_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const sta
         from = xmpp_stanza_get_attribute(stanza, "from");
         sess = ilist_finditem_func(g_list, _find_peer, from);
         if (sess != NULL) {
-            printf("target '%s' unavailable\n", from);
+            //printf("target '%s' unavailable\n", from);
             if (udata != NULL && udata->close_cb != NULL)
                 udata->close_cb(sess, "result");
             _ibb_session_release(sess);
@@ -482,7 +481,7 @@ int xmpp_ibb_userdata_alloc(xmpp_ibb_session_t *sess, void **udata, int size)
     }
 
     if (sess->userdata != NULL) {
-        printf("%s() called again, free userdata.\n", __FUNCTION__);
+        //printf("%s() called again, free userdata.\n", __FUNCTION__);
         free(sess->userdata);
     }
 
