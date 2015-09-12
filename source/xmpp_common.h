@@ -17,6 +17,7 @@ struct _xmpp_t
 {
     xmpp_ctx_t *ctx;
     xmpp_conn_t *conn;
+    xmpp_mem_t *mem;
     xmpp_log_t *log;
     pthread_t pth;
     xmppconn_handler callback;

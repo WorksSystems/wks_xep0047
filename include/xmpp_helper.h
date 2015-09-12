@@ -11,7 +11,7 @@ extern "C"
 
 typedef int (*xmppconn_handler)(xmpp_t *xmpp, xmppconn_info_t *conninfo, void *userdata);
 
-xmpp_t *xmpphelper_new(xmppconn_handler callback, int loglevel, void *userdata);
+xmpp_t *xmpphelper_new(xmppconn_handler callback, xmpp_mem_t *mem, xmpp_log_t *log, void *userdata);
 
 int xmpphelper_connect(xmpp_t *xmpp, char *host, int port, char *jid, char *pass);
 

@@ -74,7 +74,7 @@ static void *pth_func(void *arg)
     return NULL;
 }
 
-xmpp_t *xmpphelper_new(xmppconn_handler cb, int loglevel, void *userdata)
+xmpp_t *xmpphelper_new(xmppconn_handler cb, xmpp_mem_t *mem, xmpp_log_t *log, void *userdata)
 {
     xmpp_t *xmpp;
     xmpp = (xmpp_t *) malloc(sizeof(struct _xmpp_t));
@@ -84,11 +84,8 @@ xmpp_t *xmpphelper_new(xmppconn_handler cb, int loglevel, void *userdata)
     }
 
     xmpp_initialize();
-    if (loglevel == LOG_LEVEL_NONE) {
-        xmpp->log = NULL;
-    } else {
-        xmpp->log = xmpp_get_default_logger(loglevel);
-    }
+    xmpp->mem = mem;
+    xmpp->log = log;
     xmpp->ctx = xmpp_ctx_new(NULL, xmpp->log);
     xmpp->conn = xmpp_conn_new(xmpp->ctx);
     xmpp->force_tls = 0;

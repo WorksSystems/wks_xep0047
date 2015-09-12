@@ -12,14 +12,6 @@
 
 typedef struct _xmpp_t xmpp_t;
 
-typedef enum {
-    LOG_LEVEL_DEBUG,
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_WARN,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_NONE
-} xmpploglevel_t;
-
 typedef struct _xmppdata_t
 {
     void *data;

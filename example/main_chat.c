@@ -73,7 +73,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    xmpp = xmpphelper_new(conn_handler, LOG_LEVEL_DEBUG, NULL);
+    xmpp_log_t *log = xmpp_get_default_logger(XMPP_LEVEL_DEBUG);
+    xmpp = xmpphelper_new(conn_handler, NULL, log, NULL);
     xmpphelper_connect(xmpp, host, port, jid, pass);
     xmppchat_handler_add(xmpphelper_get_conn(xmpp), chat_recv_handler, xmpp);
     xmpphelper_run(xmpp);
