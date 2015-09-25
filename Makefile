@@ -16,7 +16,7 @@ STATICLIB=lib${LIBNAME}.a
 
 CC = gcc
 AR = ar
-CFLAGS = -Wall -Werror -fPIC
+CFLAGS = -Wall -Werror -Wno-unused -fPIC
 LDFLAGS =-Wl,-rpath=./ -Wl,-rpath=${XMPPLIB_LIB} -L./ -L${XMPPLIB_LIB} -l${LIBNAME} -lstrophe -lssl -lcrypto -lexpat -lm -lpthread
 
 VPATH = ${SRCPATH}

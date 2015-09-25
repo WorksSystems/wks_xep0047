@@ -9,7 +9,7 @@ LIB_PATH=[LIBSTROPHE_BASE + '/.libs/', '.']
 
 sources = Glob('source/*.c')
 env = Environment()
-env.AppendUnique(CPPPATH = INC_PATH, CCFLAGS = ['-Wall', '-Werror'])
+env.AppendUnique(CPPPATH = INC_PATH, CCFLAGS = ['-Wall', '-Werror', '-Wno-unused'])
 sharedlib = env.SharedLibrary('wksxmppxep', sources)
 staticlib = env.StaticLibrary('wksxmppxep', sources)
 
