@@ -10,7 +10,7 @@ typedef struct _xmppchat_userdata_t
 
 static xmppchat_userdata_t s_chat_udata;
 
-int xmppchat_send_message(xmpp_conn_t *conn, xmppdata_t *xdata)
+int xmppchat_send_message(xmpp_conn_t *conn, xmppchat_t *xdata)
 {
     xmpp_stanza_t *szmsg, *szbody, *sztext;
     xmpp_ctx_t *ctx;
@@ -30,6 +30,17 @@ int xmppchat_send_message(xmpp_conn_t *conn, xmppdata_t *xdata)
     xmpp_stanza_set_attribute(szmsg, "to", xdata->tojid);
     xmpp_stanza_add_child(szmsg, szbody);
 
+    if (xdata->subject != NULL && strlen(xdata->subject) > 0) {
+        xmpp_stanza_t *szsub, *szstext;
+        szstext = xmpp_stanza_new(ctx);
+        xmpp_stanza_set_text(szstext, xdata->subject);
+
+        szsub = xmpp_stanza_new(ctx);
+        xmpp_stanza_set_name(szsub, "subject");
+        xmpp_stanza_add_child(szsub, szstext);
+        xmpp_stanza_add_child(szmsg, szsub);
+    }
+
     xmpp_send(conn, szmsg);
     xmpp_stanza_release(szmsg);
 
@@ -38,8 +49,10 @@ int xmppchat_send_message(xmpp_conn_t *conn, xmppdata_t *xdata)
 
 static int _chat_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-    xmppdata_t xdata;
+    xmppchat_t xdata;
     char *intext;
+    char *subject;
+    //char *thread;
 
     xmppchat_userdata_t *udata = (xmppchat_userdata_t *) userdata;
 
@@ -48,10 +61,12 @@ static int _chat_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
     if (xmpp_stanza_get_attribute(stanza, "type") != NULL && !strcmp(xmpp_stanza_get_attribute(stanza, "type"), "error"))
         return 1;
     intext = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "body"));
+    subject = xmpp_stanza_get_text(xmpp_stanza_get_child_by_name(stanza, "subject"));
 
     //printf("Incoming message from %s: %s\n", xmpp_stanza_get_attribute(stanza, "from"), intext);
-    xdata.from = xmpp_stanza_get_attribute(stanza, "from");
+    xdata.from = (char *) xmpp_stanza_get_attribute(stanza, "from");
     xdata.data = (void *) intext;
+    xdata.subject = (void *) subject;
     if (udata != NULL && udata->handler != NULL)
         udata->handler(conn, &xdata, udata->userdata);
     return 1;

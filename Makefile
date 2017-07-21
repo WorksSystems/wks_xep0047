@@ -20,15 +20,15 @@ CFLAGS = -Wall -Werror -Wno-unused -fPIC
 LDFLAGS =-Wl,-rpath=./ -Wl,-rpath=${XMPPLIB_LIB} -L./ -L${XMPPLIB_LIB} -l${LIBNAME} -lstrophe -lssl -lcrypto -lexpat -lm -lpthread
 
 VPATH = ${SRCPATH}
-SRCS=${wildcard ${SRCPATH}/*.c} 
+SRCS=${wildcard ${SRCPATH}/*.c}
 HEADERS=${wildcard ${HDRPATH}/*.h}
 OBJS = ${patsubst %.c,%.o,${SRCS}}
 
-MSRCS=${wildcard ${EXMPATH}/*.c} 
+MSRCS=${wildcard ${EXMPATH}/*.c}
 MOBJS = ${patsubst %.c,%.o,${MSRCS}}
 
 #TESTTARGET=main main_chat main_ibb
-TESTTARGET=main_chat main_ibb main_ibb_data
+TESTTARGET=main_chat main_mesg main_ibb main_ibb_data
 
 all: libraries testprogram
 
@@ -38,6 +38,9 @@ main: example/main.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 main_chat: example/main_chat.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+main_mesg: example/main_mesg.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 main_ibb: example/main_ibb.o

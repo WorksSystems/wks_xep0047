@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <xmpp_helper.h>
@@ -9,8 +10,8 @@ static int _ping_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza,
 {
     char *to;
     char *id;
-    to = xmpp_stanza_get_attribute(stanza, "from");
-    id = xmpp_stanza_get_attribute(stanza, "id");
+    to = (char *) xmpp_stanza_get_attribute(stanza, "from");
+    id = (char *) xmpp_stanza_get_attribute(stanza, "id");
     xmpp_ping(conn, id, to, "result");
     //xmpp_ping(conn, NULL, to, NULL);
     return 1;

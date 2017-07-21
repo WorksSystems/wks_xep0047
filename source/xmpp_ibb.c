@@ -101,12 +101,12 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
     xmpp_ibb_session_t * sess;
     char *from, *id, *type;
 
-    id = xmpp_stanza_get_id(stanza);
-    from = xmpp_stanza_get_attribute(stanza, "from");
-    type = xmpp_stanza_get_type(stanza);
+    id = (char *) xmpp_stanza_get_id(stanza);
+    from = (char *) xmpp_stanza_get_attribute(stanza, "from");
+    type = (char *) xmpp_stanza_get_type(stanza);
     if ((child = xmpp_stanza_get_child_by_name(stanza, "open")) != NULL) {
-        char *sid = xmpp_stanza_get_attribute(child, "sid");
-        char *bsize = xmpp_stanza_get_attribute(child, "block-size");
+        char *sid = (char *) xmpp_stanza_get_attribute(child, "sid");
+        char *bsize = (char *) xmpp_stanza_get_attribute(child, "block-size");
         if (sid == NULL || bsize == NULL) {
             xmpp_iq_ack_error(conn, id, from, "cancel", "not-acceptable");
             return 1;
@@ -122,7 +122,7 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             udata->open_cb(sess, type);
         ilist_add(g_list, sess);
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "data")) != NULL) {
-        char *sid = xmpp_stanza_get_attribute(child, "sid");
+        char *sid = (char *) xmpp_stanza_get_attribute(child, "sid");
         sess = ilist_finditem_func(g_list, _find_sid, sid);
         if (sess != NULL) {
             xmppdata_t xdata;
@@ -146,7 +146,7 @@ static int _ibb_set_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stan
             xmpp_iq_ack_error(conn, id, from, "cancel", "item-not-found");
         }
     } else if ((child = xmpp_stanza_get_child_by_name(stanza, "close")) != NULL) {
-        char *sid = xmpp_stanza_get_attribute(child, "sid");
+        char *sid = (char *) xmpp_stanza_get_attribute(child, "sid");
         sess = ilist_finditem_func(g_list, _find_sid, sid);
         if (sess != NULL) {
             xmpp_iq_ack_result(conn, id, from);
@@ -169,8 +169,8 @@ static int _ibb_result_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const s
     xmpp_ibb_userdata_t * udata = (xmpp_ibb_userdata_t *) userdata;
     char *id, *type;
 
-    id = xmpp_stanza_get_id(stanza);
-    type = xmpp_stanza_get_type(stanza);
+    id = (char *) xmpp_stanza_get_id(stanza);
+    type = (char *) xmpp_stanza_get_type(stanza);
     sess = ilist_finditem_func(g_list, _find_id, id);
     if (sess != NULL) {
         if (sess->state == STATE_OPENING) {
@@ -199,12 +199,12 @@ static int _ibb_pres_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const sta
 {
     char *type;
 
-    type = xmpp_stanza_get_type(stanza);
+    type = (char *) xmpp_stanza_get_type(stanza);
     if (strncmp(type, "unavailable", 11) == 0) {
         char *from;
         xmpp_ibb_session_t * sess;
         xmpp_ibb_userdata_t * udata = (xmpp_ibb_userdata_t *) userdata;
-        from = xmpp_stanza_get_attribute(stanza, "from");
+        from = (char *) xmpp_stanza_get_attribute(stanza, "from");
         sess = ilist_finditem_func(g_list, _find_peer, from);
         if (sess != NULL) {
             //printf("target '%s' unavailable\n", from);
@@ -222,7 +222,7 @@ static int _ibb_error_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const st
     xmpp_ibb_session_t * sess;
     char *id;
 
-    id = xmpp_stanza_get_id(stanza);
+    id = (char *) xmpp_stanza_get_id(stanza);
     sess = ilist_finditem_func(g_list, _find_id, id);
     if (sess != NULL) {
         xmpp_stanza_t *error;

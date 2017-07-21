@@ -4,6 +4,7 @@
  *  Created on: Aug 7, 2015
  *      Author: user
  */
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -72,14 +73,14 @@ void xmpp_error_stanza(xmpp_stanza_t * const error, xmpperror_t *xerr)
 
     if (error == NULL || xerr == NULL) return;
 
-    code = xmpp_stanza_get_attribute(error, "code");
+    code = (char *) xmpp_stanza_get_attribute(error, "code");
     if (code == NULL)
         xerr->code = -1;
     else
         xerr->code = atoi(code);
     strncpy(xerr->type, xmpp_stanza_get_type(error), sizeof(xerr->type));
     stanza = xmpp_stanza_get_child_by_ns(error, XMPP_NS_STANZAS);
-    if (stanza != NULL) mesg = xmpp_stanza_get_name(stanza);
+    if (stanza != NULL) mesg = (char *) xmpp_stanza_get_name(stanza);
     if (mesg != NULL) strncpy(xerr->mesg, mesg, sizeof(xerr->mesg));
 }
 

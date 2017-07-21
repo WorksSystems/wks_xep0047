@@ -20,6 +20,16 @@ typedef struct _xmppdata_t
     char *from;
 } xmppdata_t;
 
+typedef struct _xmppchat_t
+{
+    void *data;
+    int size;
+    char *tojid;
+    char *from;
+    char *subject;
+    char *thread;
+} xmppchat_t;
+
 typedef struct _xmppconn_info_t
 {
     int connevent;

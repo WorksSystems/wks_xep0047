@@ -73,7 +73,8 @@ void print_usage()
     printf("      -p port, xmpp service port\n");
     printf("      -j jid, login bare JID\n");
     printf("      -w password, login passowrd\n");
-    printf("      -f ,force TLS\n");
+    printf("      -v , show stophe debug messages\n");
+    printf("      -f , force TLS\n");
 }
 
 static bool doCmd(xmpp_t *xmpp, char cmd)
@@ -129,15 +130,16 @@ static bool doCmd(xmpp_t *xmpp, char cmd)
 
 int main(int argc, char *argv[])
 {
-    bool looping = true;
+    bool looping = true, verbose = false;
     int opt;
     int force_tls = 0;
-    xmpp_t *xmpp;
     char msg[1024] = "";
     char *host = "localhost", *jid = "user1@localhost", *pass = "1234";
     int port = 5222;
+    xmpp_log_t *log = NULL;
+    xmpp_t *xmpp;
 
-    while ((opt = getopt(argc, argv, "s:p:w:j:t:hf")) != -1) {
+    while ((opt = getopt(argc, argv, "s:p:w:j:t:hfv")) != -1) {
         switch (opt)
         {
             case 's':
@@ -155,14 +157,17 @@ int main(int argc, char *argv[])
             case 'j':
                 jid = optarg;
                 break;
+            case 'v':
+                verbose = true;
+                break;
             case 'h':
             default:
                 print_usage();
                 return -1;
         }
     }
-    //xmpp_log_t *log = xmpp_get_default_logger(XMPP_LEVEL_DEBUG);
-    xmpp_log_t *log = NULL;
+    if (verbose)
+        log = xmpp_get_default_logger(XMPP_LEVEL_DEBUG);
     xmpp = xmpphelper_new(conn_handler, NULL, log, NULL);
     if (force_tls == 1) {
         xmpphelper_force_tls(xmpp);
